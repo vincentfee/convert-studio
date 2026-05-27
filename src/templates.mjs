@@ -89,7 +89,7 @@ function guideSections(tool, related) {
     <article>
       <h2>About this tool</h2>
       <p>${escapeHtml(tool.useCase)}</p>
-      <p>${tool.mode === "browser" ? "This conversion is handled locally in your browser where possible, which keeps the workflow fast and private." : "This conversion needs server processing because PDF and Office files often require dedicated document engines."}</p>
+      <p>${tool.mode === "browser" ? "This conversion is handled locally in your browser where possible, which keeps the workflow fast and private." : tool.category === "PDF" ? "This conversion needs server processing because PDF and Office files often require dedicated document engines." : "This conversion needs server processing because this image format is not consistently supported by browsers."}</p>
     </article>
   </section>
   <div class="ad-slot" aria-label="Advertisement">Advertisement</div>

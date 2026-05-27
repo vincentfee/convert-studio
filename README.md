@@ -29,4 +29,20 @@ The API listens on `http://localhost:8000`.
 - Image: HEIC to JPG, PNG to JPG, JPG to PNG, JPG to WebP, WebP to PNG, WebP to JPG, PNG to WebP, AVIF to JPG, TIFF to JPG, Compress Image, Resize Image, Image to PDF
 - PDF: Word to PDF, PDF to Word, Compress PDF, PDF to JPG, JPG to PDF, Merge PDF, Split PDF
 
+## Test converters
+
+Install local test-only dependencies once:
+
+```powershell
+npm.cmd install playwright-core --prefix .test_node --no-save
+& 'C:\Users\totof\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' -m pip install pillow-heif --target .test_deps --upgrade
+```
+
+Then run:
+
+```powershell
+& 'C:\Users\totof\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe' scripts\test-online-converters.py
+& 'C:\Users\totof\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' scripts\test-browser-converters.mjs
+```
+
 Server-backed tools are marked in the page data. Browser-backed tools never upload files.
