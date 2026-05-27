@@ -1,7 +1,7 @@
 export const site = {
-  name: "Convert Studio",
-  url: "https://convert-studio-web.onrender.com",
-  description: "Free image and PDF conversion tools built for quick, private, and reliable file workflows.",
+  name: "FileForma",
+  url: "https://fileforma.com",
+  description: "Free image and PDF conversion tools from FileForma, built for quick, private, and reliable file workflows.",
 };
 
 const sharedImageFaq = [
@@ -290,7 +290,7 @@ export const legalPages = [
   {
     slug: "privacy",
     title: "Privacy Policy",
-    description: "How Convert Studio handles uploaded files, browser conversions, analytics, and advertising.",
+    description: "How FileForma handles uploaded files, browser conversions, analytics, and advertising.",
     body: [
       "Browser-based tools process files locally on your device and do not upload them to our servers.",
       "Server-based PDF tools temporarily process files only to complete the requested conversion. Temporary files are scheduled for deletion after 30 minutes.",
@@ -300,7 +300,7 @@ export const legalPages = [
   {
     slug: "terms",
     title: "Terms of Use",
-    description: "The rules for using Convert Studio's free file conversion tools.",
+    description: "The rules for using FileForma's free file conversion tools.",
     body: [
       "Use the service only for files you have the right to process.",
       "Do not upload malware, illegal content, or files intended to abuse the service.",
@@ -310,7 +310,7 @@ export const legalPages = [
   {
     slug: "contact",
     title: "Contact",
-    description: "Contact Convert Studio for support, feedback, and policy questions.",
+    description: "Contact FileForma for support, feedback, and policy questions.",
     body: [
       "For support, include the tool name, browser, file type, and the error message you saw.",
       "For privacy or advertising questions, include the page URL and a clear description of the issue.",
@@ -318,10 +318,10 @@ export const legalPages = [
   },
   {
     slug: "about",
-    title: "About Convert Studio",
-    description: "Convert Studio is a practical file conversion site focused on images and PDFs.",
+    title: "About FileForma",
+    description: "FileForma is a practical file conversion site focused on images and PDFs.",
     body: [
-      "Convert Studio focuses on the most common image and PDF tasks people need every day.",
+      "FileForma focuses on the most common image and PDF tasks people need every day.",
       "The product favors fast browser-side conversion where possible and low-cost server processing only where it is necessary.",
     ],
   },

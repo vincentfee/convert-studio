@@ -45,7 +45,7 @@ ALLOWED_EXTENSIONS = {
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_MAX_JOBS = 12
 
-app = FastAPI(title="Convert Studio PDF API", version="0.1.0")
+app = FastAPI(title="FileForma PDF API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),

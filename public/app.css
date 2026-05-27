@@ -74,13 +74,30 @@ a {
 
 .brand-mark {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   place-items: center;
-  color: var(--white);
-  background: var(--green);
+  background: #e9f7f2;
+  border: 1px solid rgba(13, 124, 102, 0.24);
   border-radius: 8px;
-  font-size: 13px;
+}
+
+.brand-mark svg {
+  width: 28px;
+  height: 28px;
+}
+
+.logo-page {
+  fill: var(--green);
+}
+
+.logo-fold,
+.logo-form {
+  fill: none;
+  stroke: var(--white);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
 }
 
 .nav,
@@ -324,8 +341,9 @@ h2 {
   color: var(--white);
   background: var(--green);
   border-radius: 8px;
-  font-size: 28px;
+  font-size: 14px;
   font-weight: 900;
+  text-transform: uppercase;
 }
 
 .dropzone strong {

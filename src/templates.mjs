@@ -23,7 +23,13 @@ function pageShell({ site, title, description, pathname, children }) {
   <body>
     <header class="topbar">
       <a class="brand" href="/" aria-label="${escapeHtml(site.name)} home">
-        <span class="brand-mark">CS</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" role="img">
+            <path class="logo-page" d="M11 5h13l7 7v23H11z" />
+            <path class="logo-fold" d="M24 5v8h7" />
+            <path class="logo-form" d="M16 18h12M16 24h9M16 30h6" />
+          </svg>
+        </span>
         <span>${escapeHtml(site.name)}</span>
       </a>
       <nav class="nav" aria-label="Primary navigation">
@@ -53,7 +59,7 @@ function pageShell({ site, title, description, pathname, children }) {
 
 function toolCard(tool) {
   return `<a class="tool-card" href="/${tool.slug}/">
-    <span class="tool-kicker">${tool.category} · ${tool.mode === "browser" ? "Private browser tool" : "Secure server tool"}</span>
+    <span class="tool-kicker">${tool.category} / ${tool.mode === "browser" ? "Private browser tool" : "Secure server tool"}</span>
     <strong>${escapeHtml(tool.title)}</strong>
     <span>${escapeHtml(tool.description)}</span>
   </a>`;
@@ -64,7 +70,7 @@ function converterBox(tool) {
     <div class="mode-pill">${tool.mode === "browser" ? "Runs in your browser" : "Uses secure temporary processing"}</div>
     <label class="dropzone">
       <input class="file-input" type="file" ${tool.action === "merge-pdf" || tool.action === "image-to-pdf" ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
-      <span class="upload-icon" aria-hidden="true">↑</span>
+      <span class="upload-icon" aria-hidden="true">Up</span>
       <strong>Drop files here or choose files</strong>
       <small>${tool.mode === "browser" ? "Files stay on this device." : "Maximum 50 MB per file. Files expire after 30 minutes."}</small>
     </label>
@@ -106,7 +112,7 @@ function guideSections(tool, related) {
 export function renderHome({ site, imageTools, pdfTools }) {
   return pageShell({
     site,
-    title: "Free Image and PDF Converter Tools | Convert Studio",
+    title: "Free Image and PDF Converter Tools | FileForma",
     description: site.description,
     pathname: "/",
     children: `<main>
@@ -114,7 +120,7 @@ export function renderHome({ site, imageTools, pdfTools }) {
         <div class="hero-copy">
           <p class="eyebrow">Free file conversion tools</p>
           <h1>Convert images and PDFs without the clutter.</h1>
-          <p class="lede">Fast browser tools for images, practical server tools for PDFs, and clear pages built for people who just need the file converted.</p>
+          <p class="lede">FileForma gives you fast browser tools for images, practical server tools for PDFs, and clear pages built for people who just need the file converted.</p>
           <div class="hero-actions">
             <a class="primary-link" href="/jpg-to-pdf/">Convert JPG to PDF</a>
             <a class="secondary-link" href="/compress-pdf/">Compress PDF</a>
@@ -144,7 +150,7 @@ export function renderToolPage({ site, tool, allTools }) {
   const related = allTools.filter((item) => item.slug !== tool.slug && item.category === tool.category).slice(0, 4);
   return pageShell({
     site,
-    title: `${tool.title} Online Free | Convert Studio`,
+    title: `${tool.title} Online Free | FileForma`,
     description: tool.description,
     pathname: `/${tool.slug}/`,
     children: `<main>
@@ -164,12 +170,12 @@ export function renderToolPage({ site, tool, allTools }) {
 export function renderLegalPage({ site, page, allTools }) {
   return pageShell({
     site,
-    title: `${page.title} | Convert Studio`,
+    title: `${page.title} | FileForma`,
     description: page.description,
     pathname: `/${page.slug}/`,
     children: `<main>
       <section class="plain-page">
-        <p class="eyebrow">Convert Studio</p>
+        <p class="eyebrow">FileForma</p>
         <h1>${escapeHtml(page.title)}</h1>
         <p class="lede">${escapeHtml(page.description)}</p>
         ${page.body.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}

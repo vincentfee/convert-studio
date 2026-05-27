@@ -1,6 +1,6 @@
-# Convert Studio
+# FileForma
 
-Convert Studio is a first-stage SEO-focused image and PDF converter site.
+FileForma is a first-stage SEO-focused image and PDF converter site.
 
 The frontend is generated as static HTML with no npm dependencies, so it can be built and served without network access. Browser-safe tools run locally in the user's browser. Server-only PDF and Office tools call the FastAPI backend in `backend/`.
 

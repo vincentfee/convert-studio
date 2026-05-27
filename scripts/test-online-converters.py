@@ -98,7 +98,7 @@ def create_fixtures() -> dict[str, Path]:
 
     docx = FIXTURES / "sample.docx"
     document = Document()
-    document.add_heading("Convert Studio test", level=1)
+    document.add_heading("FileForma test", level=1)
     document.add_paragraph("This document verifies Word to PDF conversion.")
     document.save(docx)
 

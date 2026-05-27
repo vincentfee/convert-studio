@@ -36,5 +36,5 @@ createServer(async (req, res) => {
     res.end("Not found");
   }
 }).listen(port, () => {
-  console.log(`Convert Studio is running at http://localhost:${port}`);
+  console.log(`FileForma is running at http://localhost:${port}`);
 });
