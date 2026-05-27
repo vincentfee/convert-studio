@@ -1,6 +1,7 @@
 services:
-  - type: static
+  - type: web
     name: convert-studio-web
+    runtime: static
     buildCommand: npm run build
     staticPublishPath: dist
     envVars:
@@ -11,7 +12,7 @@ services:
 
   - type: web
     name: convert-studio-pdf-api
-    env: docker
+    runtime: docker
     rootDir: backend
     plan: starter
     healthCheckPath: /health
