@@ -13,6 +13,8 @@ import fitz
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from PIL import Image, ImageOps
+from pillow_heif import register_heif_opener
 from pdf2docx import Converter
 from pypdf import PdfReader, PdfWriter
 
@@ -21,6 +23,8 @@ MAX_FILE_SIZE = 50 * 1024 * 1024
 EXPIRY_MINUTES = 30
 STORAGE_DIR = Path(os.getenv("CONVERT_STORAGE_DIR", "/tmp/convert-studio"))
 ALLOWED_TOOLS = {
+    "heic-to-jpg",
+    "tiff-to-jpg",
     "word-to-pdf",
     "pdf-to-word",
     "compress-pdf",
@@ -29,6 +33,8 @@ ALLOWED_TOOLS = {
     "split-pdf",
 }
 ALLOWED_EXTENSIONS = {
+    "heic-to-jpg": {".heic", ".heif"},
+    "tiff-to-jpg": {".tif", ".tiff"},
     "word-to-pdf": {".doc", ".docx"},
     "pdf-to-word": {".pdf"},
     "compress-pdf": {".pdf"},
@@ -50,6 +56,7 @@ app.add_middleware(
 
 jobs: dict[str, dict] = {}
 rate_limits: dict[str, list[datetime]] = {}
+register_heif_opener()
 
 
 def now_utc() -> datetime:
@@ -166,6 +173,24 @@ def pdf_to_jpg(inputs: list[Path], folder: Path) -> Path:
     return output_zip
 
 
+def image_to_jpg(inputs: list[Path], folder: Path) -> Path:
+    source = inputs[0]
+    output = folder / f"{source.stem}.jpg"
+    with Image.open(source) as image:
+        image = ImageOps.exif_transpose(image)
+        if image.mode not in {"RGB", "L"}:
+            background = Image.new("RGB", image.size, (255, 255, 255))
+            if "A" in image.getbands():
+                background.paste(image, mask=image.getchannel("A"))
+                image = background
+            else:
+                image = image.convert("RGB")
+        else:
+            image = image.convert("RGB")
+        image.save(output, "JPEG", quality=92, optimize=True)
+    return output
+
+
 def merge_pdf(inputs: list[Path], folder: Path) -> Path:
     writer = PdfWriter()
     for source in inputs:
@@ -210,7 +235,9 @@ def process_job(job_id: str, tool: str, inputs: list[Path], pages: str | None) -
     folder = job_dir(job_id)
     jobs[job_id]["status"] = "processing"
     try:
-        if tool == "word-to-pdf":
+        if tool in {"heic-to-jpg", "tiff-to-jpg"}:
+            output = image_to_jpg(inputs, folder)
+        elif tool == "word-to-pdf":
             output = convert_word_to_pdf(inputs, folder)
         elif tool == "pdf-to-word":
             output = convert_pdf_to_word(inputs, folder)

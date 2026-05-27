@@ -1,6 +1,6 @@
 export const site = {
   name: "Convert Studio",
-  url: "https://example.com",
+  url: "https://convert-studio-web.onrender.com",
   description: "Free image and PDF conversion tools built for quick, private, and reliable file workflows.",
 };
 
@@ -10,6 +10,12 @@ const sharedImageFaq = [
   ["Will transparent images stay transparent?", "PNG and WebP can keep transparency. JPG does not support transparency, so transparent areas are filled with white."],
 ];
 
+const sharedServerImageFaq = [
+  ["Are HEIC or TIFF files uploaded?", "Yes. These formats need secure temporary server processing because browser support is inconsistent."],
+  ["How long are files kept?", "Uploaded images and converted files are temporary and are scheduled for deletion after 30 minutes."],
+  ["Why convert HEIC to JPG?", "JPG is accepted by more websites, forms, email systems, and older desktop apps than HEIC."],
+];
+
 const sharedPdfFaq = [
   ["How long are files kept?", "Server-processed files are temporary and are scheduled for deletion after 30 minutes."],
   ["Is PDF to Word always perfect?", "No. The first version is best effort. Complex layouts, scanned documents, and heavy tables may need manual cleanup."],
@@ -17,6 +23,18 @@ const sharedPdfFaq = [
 ];
 
 export const imageTools = [
+  {
+    slug: "heic-to-jpg",
+    title: "HEIC to JPG Converter",
+    category: "Image",
+    mode: "server",
+    input: "HEIC",
+    output: "JPG",
+    accept: ".heic,.heif,image/heic,image/heif",
+    action: "heic-to-jpg",
+    description: "Convert iPhone HEIC photos to widely compatible JPG files.",
+    useCase: "Best when a website, form, email system, or Windows app will not accept photos saved by an iPhone.",
+  },
   {
     slug: "png-to-jpg",
     title: "PNG to JPG Converter",
@@ -72,6 +90,60 @@ export const imageTools = [
     extension: "png",
     description: "Convert WebP images to PNG for apps and editors that do not support WebP.",
     useCase: "Helpful when a platform rejects WebP uploads or when you need a PNG for editing.",
+  },
+  {
+    slug: "webp-to-jpg",
+    title: "WebP to JPG Converter",
+    category: "Image",
+    mode: "browser",
+    input: "WebP",
+    output: "JPG",
+    accept: "image/webp",
+    action: "image-convert",
+    target: "image/jpeg",
+    extension: "jpg",
+    description: "Convert WebP images to JPG for older apps, upload forms, and file previews.",
+    useCase: "Useful when a downloaded web image is saved as WebP but the place you need to upload it only accepts JPG.",
+  },
+  {
+    slug: "png-to-webp",
+    title: "PNG to WebP Converter",
+    category: "Image",
+    mode: "browser",
+    input: "PNG",
+    output: "WebP",
+    accept: "image/png",
+    action: "image-convert",
+    target: "image/webp",
+    extension: "webp",
+    description: "Convert PNG images to WebP for smaller web assets with transparency support.",
+    useCase: "Good for website graphics, app screenshots, icons, and UI images that need smaller file sizes.",
+  },
+  {
+    slug: "avif-to-jpg",
+    title: "AVIF to JPG Converter",
+    category: "Image",
+    mode: "browser",
+    input: "AVIF",
+    output: "JPG",
+    accept: "image/avif",
+    action: "image-convert",
+    target: "image/jpeg",
+    extension: "jpg",
+    description: "Convert AVIF images to JPG for broad compatibility.",
+    useCase: "Helpful when modern AVIF images will not open in an older editor, CMS, or upload portal.",
+  },
+  {
+    slug: "tiff-to-jpg",
+    title: "TIFF to JPG Converter",
+    category: "Image",
+    mode: "server",
+    input: "TIFF",
+    output: "JPG",
+    accept: ".tif,.tiff,image/tiff",
+    action: "tiff-to-jpg",
+    description: "Convert large TIFF images to practical JPG files.",
+    useCase: "Useful for scanned documents, archive images, and print files that need to be shared or uploaded online.",
   },
   {
     slug: "compress-image",
@@ -207,7 +279,7 @@ export const pdfTools = [
 ];
 
 for (const tool of imageTools) {
-  tool.faq = sharedImageFaq;
+  tool.faq = tool.mode === "server" ? sharedServerImageFaq : sharedImageFaq;
 }
 
 for (const tool of pdfTools) {

@@ -53,7 +53,7 @@ function pageShell({ site, title, description, pathname, children }) {
 
 function toolCard(tool) {
   return `<a class="tool-card" href="/${tool.slug}/">
-    <span class="tool-kicker">${tool.category} · ${tool.mode === "browser" ? "Private browser tool" : "Server PDF tool"}</span>
+    <span class="tool-kicker">${tool.category} · ${tool.mode === "browser" ? "Private browser tool" : "Secure server tool"}</span>
     <strong>${escapeHtml(tool.title)}</strong>
     <span>${escapeHtml(tool.description)}</span>
   </a>`;

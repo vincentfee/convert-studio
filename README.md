@@ -26,7 +26,7 @@ The API listens on `http://localhost:8000`.
 
 ## First-stage tools
 
-- Image: PNG to JPG, JPG to PNG, JPG to WebP, WebP to PNG, Compress Image, Resize Image, Image to PDF
+- Image: HEIC to JPG, PNG to JPG, JPG to PNG, JPG to WebP, WebP to PNG, WebP to JPG, PNG to WebP, AVIF to JPG, TIFF to JPG, Compress Image, Resize Image, Image to PDF
 - PDF: Word to PDF, PDF to Word, Compress PDF, PDF to JPG, JPG to PDF, Merge PDF, Split PDF
 
 Server-backed tools are marked in the page data. Browser-backed tools never upload files.
