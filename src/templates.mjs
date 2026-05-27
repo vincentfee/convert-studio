@@ -59,22 +59,30 @@ function pageShell({ site, title, description, pathname, children }) {
 
 function toolCard(tool) {
   return `<a class="tool-card" href="/${tool.slug}/">
-    <span class="tool-kicker">${tool.category} / ${tool.mode === "browser" ? "Private browser tool" : "Secure server tool"}</span>
+    <span class="tool-icon" aria-hidden="true">${escapeHtml(tool.icon || tool.output?.slice(0, 1) || "F")}</span>
+    <span class="tool-kicker">${escapeHtml(tool.group || tool.category)} / ${tool.mode === "browser" ? "Private browser tool" : "Secure server tool"}</span>
     <strong>${escapeHtml(tool.title)}</strong>
     <span>${escapeHtml(tool.description)}</span>
   </a>`;
 }
 
 function converterBox(tool) {
+  const multiple = tool.action === "merge-pdf" || tool.action === "image-to-pdf";
   return `<section class="converter-panel" data-tool='${escapeHtml(JSON.stringify(tool))}'>
     <div class="mode-pill">${tool.mode === "browser" ? "Runs in your browser" : "Uses secure temporary processing"}</div>
     <label class="dropzone">
-      <input class="file-input" type="file" ${tool.action === "merge-pdf" || tool.action === "image-to-pdf" ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
+      <input class="file-input" type="file" ${multiple ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
       <span class="upload-icon" aria-hidden="true">Up</span>
       <strong>Drop files here or choose files</strong>
       <small>${tool.mode === "browser" ? "Files stay on this device." : "Maximum 50 MB per file. Files expire after 30 minutes."}</small>
     </label>
-    ${tool.action === "split-pdf" ? '<label class="option-row">Pages to keep <input class="pages-input" type="text" placeholder="Example: 1-3,5" /></label>' : ""}
+    ${["split-pdf", "extract-pdf-pages"].includes(tool.action) ? '<label class="option-row">Pages to keep <input class="pages-input" type="text" placeholder="Example: 1-3,5" /></label>' : ""}
+    ${tool.action === "remove-pdf-pages" ? '<label class="option-row">Pages to remove <input class="pages-input" type="text" placeholder="Example: 2,4-6" /></label>' : ""}
+    ${tool.action === "organize-pdf" ? '<label class="option-row">New page order <input class="pages-input" type="text" placeholder="Example: 3,1,2,4-6" /></label>' : ""}
+    ${tool.action === "rotate-pdf" ? '<label class="option-row">Rotation <select class="rotation-input"><option value="90">90 degrees</option><option value="180">180 degrees</option><option value="270">270 degrees</option></select></label>' : ""}
+    ${tool.action === "add-watermark" ? '<label class="option-row">Watermark text <input class="text-input" type="text" value="DRAFT" maxlength="80" /></label>' : ""}
+    ${tool.action === "crop-pdf" ? '<label class="option-row">Crop margin in points <input class="margin-input" type="number" min="0" max="144" value="24" /></label>' : ""}
+    ${["protect-pdf", "unlock-pdf"].includes(tool.action) ? '<label class="option-row">Password <input class="password-input" type="password" placeholder="Enter password" /></label>' : ""}
     ${tool.action === "resize-image" ? '<label class="option-row">Max width <input class="width-input" type="number" min="100" max="5000" value="1600" /></label>' : ""}
     <button class="primary-btn convert-btn" type="button">Convert now</button>
     <p class="status-text">Choose a file to start.</p>
@@ -110,6 +118,7 @@ function guideSections(tool, related) {
 }
 
 export function renderHome({ site, imageTools, pdfTools }) {
+  const pdfGroups = [...new Set(pdfTools.map((tool) => tool.group || "PDF Tools"))];
   return pageShell({
     site,
     title: "Free Image and PDF Converter Tools | FileForma",
@@ -118,29 +127,36 @@ export function renderHome({ site, imageTools, pdfTools }) {
     children: `<main>
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">Free file conversion tools</p>
-          <h1>Convert images and PDFs without the clutter.</h1>
-          <p class="lede">FileForma gives you fast browser tools for images, practical server tools for PDFs, and clear pages built for people who just need the file converted.</p>
+          <p class="eyebrow">Free PDF and image tools</p>
+          <h1>Everyday PDF tools, made obvious.</h1>
+          <p class="lede">FileForma brings the most common PDF and image jobs into one clean workspace: merge, split, compress, convert, rotate, watermark, protect, and more.</p>
           <div class="hero-actions">
-            <a class="primary-link" href="/jpg-to-pdf/">Convert JPG to PDF</a>
+            <a class="primary-link" href="/merge-pdf/">Merge PDF</a>
             <a class="secondary-link" href="/compress-pdf/">Compress PDF</a>
           </div>
         </div>
         <div class="hero-panel">
-          <span class="panel-label">Popular now</span>
-          ${[pdfTools[0], pdfTools[2], pdfTools[4], imageTools[2]].map(toolCard).join("")}
+          <span class="panel-label">Popular PDF tools</span>
+          ${["merge-pdf", "compress-pdf", "pdf-to-word", "jpg-to-pdf"].map((slug) => pdfTools.find((tool) => tool.slug === slug)).filter(Boolean).map(toolCard).join("")}
         </div>
       </section>
+      <section class="tool-section" id="pdf-tools">
+        <p class="eyebrow">All PDF tools</p>
+        <h2>Choose the PDF task you need</h2>
+        <div class="tool-tabs" aria-label="PDF tool categories">
+          <a href="#pdf-tools">All</a>
+          ${pdfGroups.map((group) => `<a href="#${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">${escapeHtml(group)}</a>`).join("")}
+        </div>
+        ${pdfGroups.map((group) => `<section class="tool-group" id="${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
+          <h3>${escapeHtml(group)}</h3>
+          <div class="tool-list">${pdfTools.filter((tool) => tool.group === group).map(toolCard).join("")}</div>
+        </section>`).join("")}
+      </section>
+      <div class="ad-slot" aria-label="Advertisement">Advertisement</div>
       <section class="tool-section" id="image-tools">
         <p class="eyebrow">Image converter</p>
         <h2>Image tools</h2>
         <div class="tool-list">${imageTools.map(toolCard).join("")}</div>
-      </section>
-      <div class="ad-slot" aria-label="Advertisement">Advertisement</div>
-      <section class="tool-section" id="pdf-tools">
-        <p class="eyebrow">PDF converter</p>
-        <h2>PDF tools</h2>
-        <div class="tool-list">${pdfTools.map(toolCard).join("")}</div>
       </section>
     </main>`,
   });

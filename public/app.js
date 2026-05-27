@@ -161,7 +161,7 @@ async function imagesToPdf(files) {
 async function runBrowserTool(panel, tool, files) {
   const rows = [];
   for (const file of files) {
-    rows.push(makeQueueItem(file, `${formatBytes(file.size)} · Processing`));
+    rows.push(makeQueueItem(file, `${formatBytes(file.size)} / Processing`));
   }
   setQueue(panel, rows);
 
@@ -169,7 +169,7 @@ async function runBrowserTool(panel, tool, files) {
     const blob = await imagesToPdf(files);
     const url = URL.createObjectURL(blob);
     const first = files[0];
-    setQueue(panel, [makeQueueItem(first, `${formatBytes(blob.size)} · Ready`, url, replaceExtension(first.name, "pdf"))]);
+    setQueue(panel, [makeQueueItem(first, `${formatBytes(blob.size)} / Ready`, url, replaceExtension(first.name, "pdf"))]);
     setStatus(panel, "Conversion complete.");
     return;
   }
@@ -179,7 +179,7 @@ async function runBrowserTool(panel, tool, files) {
     try {
       const blob = await imageToBlob(file, tool, panel);
       const url = URL.createObjectURL(blob);
-      resultRows.push(makeQueueItem(file, `${formatBytes(blob.size)} · Ready`, url, replaceExtension(file.name, tool.extension)));
+      resultRows.push(makeQueueItem(file, `${formatBytes(blob.size)} / Ready`, url, replaceExtension(file.name, tool.extension)));
     } catch (error) {
       resultRows.push(makeQueueItem(file, error.message || "Conversion failed."));
     }
@@ -194,9 +194,17 @@ async function runServerTool(panel, tool, files) {
   form.append("targetFormat", tool.output);
   const pagesInput = panel.querySelector(".pages-input");
   if (pagesInput) form.append("pages", pagesInput.value || "1");
+  const rotationInput = panel.querySelector(".rotation-input");
+  if (rotationInput) form.append("rotation", rotationInput.value || "90");
+  const textInput = panel.querySelector(".text-input");
+  if (textInput) form.append("text", textInput.value || "DRAFT");
+  const marginInput = panel.querySelector(".margin-input");
+  if (marginInput) form.append("margin", marginInput.value || "24");
+  const passwordInput = panel.querySelector(".password-input");
+  if (passwordInput) form.append("password", passwordInput.value || "");
   files.forEach((file) => form.append("files", file));
 
-  setQueue(panel, files.map((file) => makeQueueItem(file, `${formatBytes(file.size)} · Uploading`)));
+  setQueue(panel, files.map((file) => makeQueueItem(file, `${formatBytes(file.size)} / Uploading`)));
   const createResponse = await fetch(`${API_BASE}/api/jobs`, { method: "POST", body: form });
   if (!createResponse.ok) {
     const error = await createResponse.json().catch(() => ({}));
@@ -210,13 +218,13 @@ async function runServerTool(panel, tool, files) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const response = await fetch(`${API_BASE}/api/jobs/${job.jobId}`);
     current = await response.json();
-    setQueue(panel, files.map((file) => makeQueueItem(file, `${formatBytes(file.size)} · ${current.status}`)));
+    setQueue(panel, files.map((file) => makeQueueItem(file, `${formatBytes(file.size)} / ${current.status}`)));
     if (current.status === "done" || current.status === "failed") break;
   }
 
   if (current.status !== "done") throw new Error(current.error || "Conversion failed or timed out.");
   const downloadUrl = `${API_BASE}/api/jobs/${job.jobId}/download`;
-  setQueue(panel, [makeQueueItem(files[0], "Ready · expires in 30 minutes", downloadUrl, current.outputName || "converted-file")]);
+  setQueue(panel, [makeQueueItem(files[0], "Ready / expires in 30 minutes", downloadUrl, current.outputName || "converted-file")]);
   setStatus(panel, "Conversion complete.");
 }
 

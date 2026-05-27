@@ -26,21 +26,45 @@ ALLOWED_TOOLS = {
     "heic-to-jpg",
     "tiff-to-jpg",
     "word-to-pdf",
+    "powerpoint-to-pdf",
+    "excel-to-pdf",
     "pdf-to-word",
     "compress-pdf",
+    "repair-pdf",
     "pdf-to-jpg",
     "merge-pdf",
     "split-pdf",
+    "remove-pdf-pages",
+    "extract-pdf-pages",
+    "organize-pdf",
+    "rotate-pdf",
+    "add-page-numbers",
+    "add-watermark",
+    "crop-pdf",
+    "unlock-pdf",
+    "protect-pdf",
 }
 ALLOWED_EXTENSIONS = {
     "heic-to-jpg": {".heic", ".heif"},
     "tiff-to-jpg": {".tif", ".tiff"},
     "word-to-pdf": {".doc", ".docx"},
+    "powerpoint-to-pdf": {".ppt", ".pptx"},
+    "excel-to-pdf": {".xls", ".xlsx"},
     "pdf-to-word": {".pdf"},
     "compress-pdf": {".pdf"},
+    "repair-pdf": {".pdf"},
     "pdf-to-jpg": {".pdf"},
     "merge-pdf": {".pdf"},
     "split-pdf": {".pdf"},
+    "remove-pdf-pages": {".pdf"},
+    "extract-pdf-pages": {".pdf"},
+    "organize-pdf": {".pdf"},
+    "rotate-pdf": {".pdf"},
+    "add-page-numbers": {".pdf"},
+    "add-watermark": {".pdf"},
+    "crop-pdf": {".pdf"},
+    "unlock-pdf": {".pdf"},
+    "protect-pdf": {".pdf"},
 }
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_MAX_JOBS = 12
@@ -117,7 +141,7 @@ def run_command(command: list[str], cwd: Path) -> None:
         raise RuntimeError((result.stderr or result.stdout or "Command failed").strip())
 
 
-def convert_word_to_pdf(inputs: list[Path], folder: Path) -> Path:
+def convert_office_to_pdf(inputs: list[Path], folder: Path) -> Path:
     source = inputs[0]
     run_command(["libreoffice", "--headless", "--convert-to", "pdf", "--outdir", str(folder), str(source)], folder)
     output = folder / f"{source.stem}.pdf"
@@ -203,6 +227,15 @@ def merge_pdf(inputs: list[Path], folder: Path) -> Path:
     return output
 
 
+def copy_reader_pages(reader: PdfReader, page_indexes: list[int], output: Path) -> Path:
+    writer = PdfWriter()
+    for page_index in page_indexes:
+        writer.add_page(reader.pages[page_index])
+    with output.open("wb") as handle:
+        writer.write(handle)
+    return output
+
+
 def parse_pages(spec: str, total: int) -> list[int]:
     pages: list[int] = []
     for part in spec.replace(" ", "").split(","):
@@ -222,33 +255,184 @@ def parse_pages(spec: str, total: int) -> list[int]:
 def split_pdf(inputs: list[Path], folder: Path, page_spec: str) -> Path:
     source = inputs[0]
     reader = PdfReader(str(source))
-    writer = PdfWriter()
-    for page_index in parse_pages(page_spec, len(reader.pages)):
-        writer.add_page(reader.pages[page_index])
     output = folder / f"{source.stem}-pages.pdf"
+    return copy_reader_pages(reader, parse_pages(page_spec, len(reader.pages)), output)
+
+
+def remove_pdf_pages(inputs: list[Path], folder: Path, page_spec: str) -> Path:
+    source = inputs[0]
+    reader = PdfReader(str(source))
+    remove = set(parse_pages(page_spec, len(reader.pages)))
+    keep = [index for index in range(len(reader.pages)) if index not in remove]
+    if not keep:
+        raise RuntimeError("You cannot remove every page from a PDF.")
+    output = folder / f"{source.stem}-removed-pages.pdf"
+    return copy_reader_pages(reader, keep, output)
+
+
+def organize_pdf(inputs: list[Path], folder: Path, page_spec: str) -> Path:
+    source = inputs[0]
+    reader = PdfReader(str(source))
+    output = folder / f"{source.stem}-organized.pdf"
+    return copy_reader_pages(reader, parse_pages(page_spec, len(reader.pages)), output)
+
+
+def rotate_pdf(inputs: list[Path], folder: Path, rotation: str | None) -> Path:
+    source = inputs[0]
+    angle = int(rotation or "90")
+    if angle not in {90, 180, 270}:
+        raise RuntimeError("Rotation must be 90, 180, or 270 degrees.")
+    reader = PdfReader(str(source))
+    writer = PdfWriter()
+    for page in reader.pages:
+        page.rotate(angle)
+        writer.add_page(page)
+    output = folder / f"{source.stem}-rotated.pdf"
     with output.open("wb") as handle:
         writer.write(handle)
     return output
 
 
-def process_job(job_id: str, tool: str, inputs: list[Path], pages: str | None) -> None:
+def repair_pdf(inputs: list[Path], folder: Path) -> Path:
+    source = inputs[0]
+    reader = PdfReader(str(source))
+    output = folder / f"{source.stem}-repaired.pdf"
+    return copy_reader_pages(reader, list(range(len(reader.pages))), output)
+
+
+def add_page_numbers(inputs: list[Path], folder: Path) -> Path:
+    source = inputs[0]
+    output = folder / f"{source.stem}-numbered.pdf"
+    document = fitz.open(source)
+    try:
+        total = document.page_count
+        for index, page in enumerate(document, start=1):
+            rect = page.rect
+            page.insert_text(
+                fitz.Point(rect.width / 2 - 18, rect.height - 24),
+                f"{index} / {total}",
+                fontsize=10,
+                color=(0.18, 0.18, 0.18),
+            )
+        document.save(output)
+    finally:
+        document.close()
+    return output
+
+
+def add_watermark(inputs: list[Path], folder: Path, text: str | None) -> Path:
+    source = inputs[0]
+    label = (text or "DRAFT").strip()[:80] or "DRAFT"
+    output = folder / f"{source.stem}-watermarked.pdf"
+    document = fitz.open(source)
+    try:
+        for page in document:
+            rect = page.rect
+            page.insert_text(
+                fitz.Point(rect.width * 0.16, rect.height * 0.52),
+                label,
+                fontsize=max(28, rect.width / 12),
+                color=(0.75, 0.15, 0.12),
+                fill_opacity=0.18,
+            )
+        document.save(output)
+    finally:
+        document.close()
+    return output
+
+
+def crop_pdf(inputs: list[Path], folder: Path, margin: str | None) -> Path:
+    source = inputs[0]
+    amount = max(0, min(144, int(float(margin or "24"))))
+    reader = PdfReader(str(source))
+    writer = PdfWriter()
+    for page in reader.pages:
+        box = page.cropbox
+        if float(box.right) - float(box.left) <= amount * 2 or float(box.top) - float(box.bottom) <= amount * 2:
+            raise RuntimeError("Crop margin is too large for this PDF.")
+        box.left = float(box.left) + amount
+        box.right = float(box.right) - amount
+        box.bottom = float(box.bottom) + amount
+        box.top = float(box.top) - amount
+        writer.add_page(page)
+    output = folder / f"{source.stem}-cropped.pdf"
+    with output.open("wb") as handle:
+        writer.write(handle)
+    return output
+
+
+def unlock_pdf(inputs: list[Path], folder: Path, password: str | None) -> Path:
+    source = inputs[0]
+    reader = PdfReader(str(source))
+    if reader.is_encrypted:
+        if not password:
+            raise RuntimeError("This PDF requires a password.")
+        if reader.decrypt(password) == 0:
+            raise RuntimeError("The password did not unlock this PDF.")
+    output = folder / f"{source.stem}-unlocked.pdf"
+    return copy_reader_pages(reader, list(range(len(reader.pages))), output)
+
+
+def protect_pdf(inputs: list[Path], folder: Path, password: str | None) -> Path:
+    if not password:
+        raise RuntimeError("Enter a password to protect this PDF.")
+    source = inputs[0]
+    reader = PdfReader(str(source))
+    writer = PdfWriter()
+    for page in reader.pages:
+        writer.add_page(page)
+    writer.encrypt(password)
+    output = folder / f"{source.stem}-protected.pdf"
+    with output.open("wb") as handle:
+        writer.write(handle)
+    return output
+
+
+def process_job(
+    job_id: str,
+    tool: str,
+    inputs: list[Path],
+    pages: str | None,
+    rotation: str | None,
+    text: str | None,
+    margin: str | None,
+    password: str | None,
+) -> None:
     folder = job_dir(job_id)
     jobs[job_id]["status"] = "processing"
     try:
         if tool in {"heic-to-jpg", "tiff-to-jpg"}:
             output = image_to_jpg(inputs, folder)
-        elif tool == "word-to-pdf":
-            output = convert_word_to_pdf(inputs, folder)
+        elif tool in {"word-to-pdf", "powerpoint-to-pdf", "excel-to-pdf"}:
+            output = convert_office_to_pdf(inputs, folder)
         elif tool == "pdf-to-word":
             output = convert_pdf_to_word(inputs, folder)
         elif tool == "compress-pdf":
             output = compress_pdf(inputs, folder)
+        elif tool == "repair-pdf":
+            output = repair_pdf(inputs, folder)
         elif tool == "pdf-to-jpg":
             output = pdf_to_jpg(inputs, folder)
         elif tool == "merge-pdf":
             output = merge_pdf(inputs, folder)
-        elif tool == "split-pdf":
+        elif tool in {"split-pdf", "extract-pdf-pages"}:
             output = split_pdf(inputs, folder, pages or "1")
+        elif tool == "remove-pdf-pages":
+            output = remove_pdf_pages(inputs, folder, pages or "1")
+        elif tool == "organize-pdf":
+            output = organize_pdf(inputs, folder, pages or "1")
+        elif tool == "rotate-pdf":
+            output = rotate_pdf(inputs, folder, rotation)
+        elif tool == "add-page-numbers":
+            output = add_page_numbers(inputs, folder)
+        elif tool == "add-watermark":
+            output = add_watermark(inputs, folder, text)
+        elif tool == "crop-pdf":
+            output = crop_pdf(inputs, folder, margin)
+        elif tool == "unlock-pdf":
+            output = unlock_pdf(inputs, folder, password)
+        elif tool == "protect-pdf":
+            output = protect_pdf(inputs, folder, password)
         else:
             raise RuntimeError("Unsupported tool.")
         jobs[job_id].update(status="done", output=str(output), outputName=output.name)
@@ -278,6 +462,10 @@ async def create_job(
     targetFormat: Annotated[str, Form()],
     files: Annotated[list[UploadFile], File()],
     pages: Annotated[str | None, Form()] = None,
+    rotation: Annotated[str | None, Form()] = None,
+    text: Annotated[str | None, Form()] = None,
+    margin: Annotated[str | None, Form()] = None,
+    password: Annotated[str | None, Form()] = None,
 ) -> dict:
     cleanup_expired()
     if tool not in ALLOWED_TOOLS:
@@ -304,7 +492,7 @@ async def create_job(
         jobs.pop(job_id, None)
         raise
 
-    background_tasks.add_task(process_job, job_id, tool, inputs, pages)
+    background_tasks.add_task(process_job, job_id, tool, inputs, pages, rotation, text, margin, password)
     return {"jobId": job_id, "status": "queued", "expiresInMinutes": EXPIRY_MINUTES}
 
 
