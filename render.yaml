@@ -4,6 +4,8 @@ services:
     runtime: static
     buildCommand: npm run build
     staticPublishPath: dist
+    domains:
+      - fileforma.com
     envVars:
       - key: NODE_VERSION
         value: 24
