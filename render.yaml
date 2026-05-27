@@ -1,0 +1,22 @@
+services:
+  - type: static
+    name: convert-studio-web
+    buildCommand: npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: CONVERT_API_BASE
+        value: https://convert-studio-pdf-api.onrender.com
+
+  - type: web
+    name: convert-studio-pdf-api
+    env: docker
+    rootDir: backend
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: CONVERT_STORAGE_DIR
+        value: /tmp/convert-studio
