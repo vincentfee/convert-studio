@@ -6,6 +6,7 @@ services:
     staticPublishPath: dist
     domains:
       - fileforma.com
+      - www.fileforma.com
     envVars:
       - key: NODE_VERSION
         value: 24
