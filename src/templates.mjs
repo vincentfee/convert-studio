@@ -56,8 +56,9 @@ function languageSwitcher(className = "") {
   </label>`;
 }
 
-function pageShell({ site, title, description, pathname, children }) {
+function pageShell({ site, title, description, pathname, children, jsonLd = [] }) {
   const canonical = `${site.url}${pathname}`;
+  const schema = jsonLd.map((item) => `<script type="application/ld+json">${JSON.stringify(item)}</script>`).join("\n");
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -67,6 +68,7 @@ function pageShell({ site, title, description, pathname, children }) {
     <meta name="description" content="${escapeHtml(description)}" />
     <link rel="canonical" href="${canonical}" />
     <link rel="stylesheet" href="/assets/app.css" />
+    ${schema}
   </head>
   <body>
     <header class="topbar">
@@ -84,6 +86,7 @@ function pageShell({ site, title, description, pathname, children }) {
         <nav class="nav" aria-label="Primary navigation">
           <a href="/#image-tools" data-i18n="nav.imageTools">Image Tools</a>
           <a href="/#pdf-tools" data-i18n="nav.pdfTools">PDF Tools</a>
+          <a href="/blog/">Blog</a>
           <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
         </nav>
         ${languageSwitcher()}
@@ -100,6 +103,7 @@ function pageShell({ site, title, description, pathname, children }) {
         <a href="/privacy/" data-i18n="nav.privacy">Privacy</a>
         <a href="/terms/" data-i18n="footer.terms">Terms</a>
         <a href="/contact/" data-i18n="footer.contact">Contact</a>
+        <a href="/blog/">Blog</a>
       </nav>
       ${languageSwitcher("footer-language")}
     </footer>
@@ -114,6 +118,13 @@ function toolCard(tool) {
     <span class="tool-icon" aria-hidden="true">${iconSvg(tool.icon)}</span>
     <strong>${escapeHtml(tool.title)}</strong>
     <span>${escapeHtml(tool.description)}</span>
+  </a>`;
+}
+
+function miniToolCard(tool) {
+  return `<a class="mini-tool-card" href="/${tool.slug}/">
+    <span class="tool-icon" aria-hidden="true">${iconSvg(tool.icon)}</span>
+    <strong>${escapeHtml(tool.title.replace(" Converter", ""))}</strong>
   </a>`;
 }
 
@@ -141,7 +152,46 @@ function converterBox(tool) {
   </section>`;
 }
 
+function expandedFaq(tool) {
+  return [
+    [`How do I use the ${tool.title}?`, `Choose your ${tool.input} file, start the conversion, and download the ${tool.output} result when it is ready.`],
+    tool.mode === "browser"
+      ? ["Are files uploaded to FileForma?", "No. This tool works in your browser when possible, so the selected file stays on your device during conversion."]
+      : ["How long are uploaded files stored?", "Files are temporary. Uploads and results are scheduled to expire after 30 minutes so the service stays private and low cost."],
+    [`When should I use this ${tool.category.toLowerCase()} tool?`, tool.useCase],
+    [`What kind of ${tool.input} files work best?`, tool.category === "PDF" ? `Clean, unlocked ${tool.input} files usually convert best. Scanned documents, heavy graphics, unusual fonts, or password protection can affect the result.` : `Standard ${tool.input} files from phones, cameras, design apps, and common image editors work best. Very large files may take longer to process.`],
+    ["Is there a file size limit?", "The first-stage free workflow is designed for practical everyday files, with a 50 MB limit per file and up to five files per job."],
+    ["Can I use this tool on mobile?", "Yes. FileForma works in modern mobile browsers, so you can convert files from a phone, tablet, laptop, or desktop computer."],
+    ["Will the result always match the original perfectly?", tool.category === "PDF" ? "Most common PDF tasks are reliable, but complex layouts, scanned pages, locked files, or unusual Office formatting may need a quick review after conversion." : "Most image conversions are straightforward, but transparency, color profiles, and browser support can change how some images look after conversion."],
+  ];
+}
+
+function toolJsonLd(site, tool, faqs) {
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: tool.title,
+      applicationCategory: "WebApplication",
+      operatingSystem: "Any",
+      url: `${site.url}/${tool.slug}/`,
+      description: tool.description,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map(([question, answer]) => ({
+        "@type": "Question",
+        name: question,
+        acceptedAnswer: { "@type": "Answer", text: answer },
+      })),
+    },
+  ];
+}
+
 function guideSections(tool, related) {
+  const faqs = expandedFaq(tool);
   return `<section class="content-grid">
     <article>
       <h2>How to convert ${escapeHtml(tool.input)} to ${escapeHtml(tool.output)}</h2>
@@ -156,11 +206,21 @@ function guideSections(tool, related) {
       <p>${escapeHtml(tool.useCase)}</p>
       <p>${tool.mode === "browser" ? "This conversion is handled locally in your browser where possible, which keeps the workflow fast and private." : tool.category === "PDF" ? "This conversion needs server processing because PDF and Office files often require dedicated document engines." : "This conversion needs server processing because this image format is not consistently supported by browsers."}</p>
     </article>
+    <article>
+      <h2>Common use cases</h2>
+      <p>${escapeHtml(tool.title)} is useful when file format rules get in the way of online forms, email attachments, client documents, school submissions, web publishing, archiving, or quick office cleanup.</p>
+      <p>For best results, use a clean source file, check the converted output before sharing it, and keep a copy of the original file if the document is important.</p>
+    </article>
+    <article>
+      <h2>Privacy and file handling</h2>
+      <p>${tool.mode === "browser" ? "Where browser support allows it, the conversion runs on your own device. That means the file does not need to be uploaded just to complete a simple image or PDF task." : "Some formats require a document engine on the server. FileForma keeps that workflow temporary: files are processed for the requested task and scheduled to expire after 30 minutes."}</p>
+      <p>Do not upload files you do not have permission to process, and avoid using any online converter for highly sensitive records unless your organization allows it.</p>
+    </article>
   </section>
   <div class="ad-slot" aria-label="Advertisement">Advertisement</div>
   <section class="faq-section">
     <h2>Frequently asked questions</h2>
-    ${tool.faq.map(([q, a]) => `<details><summary>${escapeHtml(q)}</summary><p>${escapeHtml(a)}</p></details>`).join("")}
+    ${faqs.map(([q, a]) => `<details><summary>${escapeHtml(q)}</summary><p>${escapeHtml(a)}</p></details>`).join("")}
   </section>
   <section class="related-tools">
     <h2>Related tools</h2>
@@ -168,58 +228,66 @@ function guideSections(tool, related) {
   </section>`;
 }
 
-export function renderHome({ site, imageTools, pdfTools }) {
+export function renderHome({ site, imageTools, pdfTools, blogPosts = [] }) {
+  const allTools = [...imageTools, ...pdfTools];
   const pdfGroups = [...new Set(pdfTools.map((tool) => tool.group || "PDF Tools"))];
+  const popular = ["merge-pdf", "compress-pdf", "pdf-to-word", "jpg-to-pdf", "heic-to-jpg", "png-to-jpg", "webp-to-jpg", "image-to-pdf"]
+    .map((slug) => allTools.find((tool) => tool.slug === slug))
+    .filter(Boolean);
   return pageShell({
     site,
     title: "Free Image and PDF Converter Tools | FileForma",
     description: site.description,
     pathname: "/",
     children: `<main>
-      <section class="hero">
-        <div class="hero-copy">
+      <section class="home-hero">
+        <div class="hero-copy compact-copy">
           <p class="eyebrow">Free PDF and image tools</p>
-          <h1>Everyday PDF tools, made obvious.</h1>
-          <p class="lede">FileForma brings the most common PDF and image jobs into one clean workspace: merge, split, compress, convert, rotate, watermark, protect, and more.</p>
-          <div class="hero-actions">
-            <a class="primary-link" href="/merge-pdf/">Merge PDF</a>
-            <a class="secondary-link" href="/compress-pdf/">Compress PDF</a>
-          </div>
+          <h1>File conversion tools in one clean place.</h1>
+          <p class="lede">Convert, compress, organize, protect, and resize files without hunting through a long page.</p>
         </div>
-        <div class="hero-panel">
-          <span class="panel-label">Popular PDF tools</span>
-          ${["merge-pdf", "compress-pdf", "pdf-to-word", "jpg-to-pdf"].map((slug) => pdfTools.find((tool) => tool.slug === slug)).filter(Boolean).map(toolCard).join("")}
+        <div class="quick-panel">
+          <span class="panel-label">Popular tools</span>
+          <div class="quick-grid">${popular.map(miniToolCard).join("")}</div>
         </div>
       </section>
-      <section class="tool-section" id="pdf-tools">
-        <p class="eyebrow">All PDF tools</p>
-        <h2>Choose the PDF task you need</h2>
-        <div class="tool-tabs" aria-label="PDF tool categories">
-          <a href="#pdf-tools">All</a>
+      <section class="tool-directory" id="pdf-tools">
+        <div class="tool-tabs" aria-label="Tool categories">
+          <a href="#pdf-tools">PDF Tools</a>
+          <a href="#image-tools">Image Tools</a>
+          <a href="/blog/">Guides</a>
           ${pdfGroups.map((group) => `<a href="#${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">${escapeHtml(group)}</a>`).join("")}
         </div>
         ${pdfGroups.map((group) => `<section class="tool-group" id="${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
           <h3>${escapeHtml(group)}</h3>
-          <div class="tool-list">${pdfTools.filter((tool) => tool.group === group).map(toolCard).join("")}</div>
+          <div class="tool-list directory-list">${pdfTools.filter((tool) => tool.group === group).map(miniToolCard).join("")}</div>
         </section>`).join("")}
       </section>
       <div class="ad-slot" aria-label="Advertisement">Advertisement</div>
-      <section class="tool-section" id="image-tools">
-        <p class="eyebrow">Image converter</p>
+      <section class="tool-directory" id="image-tools">
         <h2>Image tools</h2>
-        <div class="tool-list">${imageTools.map(toolCard).join("")}</div>
+        <div class="tool-list directory-list">${imageTools.map(miniToolCard).join("")}</div>
+      </section>
+      <section class="blog-strip">
+        <div>
+          <p class="eyebrow">File guides</p>
+          <h2>Learn file formats, privacy, and office workflows</h2>
+        </div>
+        <div class="blog-card-list">${blogPosts.slice(0, 3).map((post) => `<a class="blog-card" href="/blog/${post.slug}/"><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.description)}</span></a>`).join("")}</div>
       </section>
     </main>`,
   });
 }
 
 export function renderToolPage({ site, tool, allTools }) {
-  const related = allTools.filter((item) => item.slug !== tool.slug && item.category === tool.category).slice(0, 4);
+  const related = allTools.filter((item) => item.slug !== tool.slug && (item.category === tool.category || item.group === tool.group)).slice(0, 6);
+  const faqs = expandedFaq(tool);
   return pageShell({
     site,
     title: `${tool.title} Online Free | FileForma`,
     description: tool.description,
     pathname: `/${tool.slug}/`,
+    jsonLd: toolJsonLd(site, tool, faqs),
     children: `<main>
       <section class="tool-hero">
         <div>
@@ -230,6 +298,57 @@ export function renderToolPage({ site, tool, allTools }) {
         ${converterBox(tool)}
       </section>
       ${guideSections(tool, related)}
+    </main>`,
+  });
+}
+
+export function renderBlogIndex({ site, blogPosts }) {
+  return pageShell({
+    site,
+    title: "File Format and PDF Guides | FileForma Blog",
+    description: "Practical guides about PDF files, image formats, office productivity, and file privacy.",
+    pathname: "/blog/",
+    children: `<main>
+      <section class="plain-page blog-index">
+        <p class="eyebrow">FileForma Blog</p>
+        <h1>Practical file format guides</h1>
+        <p class="lede">Monthly advice for people who work with PDFs, images, office documents, uploads, and privacy-sensitive files.</p>
+      </section>
+      <section class="blog-grid">${blogPosts.map((post) => `<article class="blog-card large">
+        <a href="/blog/${post.slug}/"><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.description)}</span></a>
+      </article>`).join("")}</section>
+    </main>`,
+  });
+}
+
+export function renderBlogPost({ site, post, relatedTools }) {
+  const jsonLd = [{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: { "@type": "Organization", name: site.name },
+    publisher: { "@type": "Organization", name: site.name },
+    mainEntityOfPage: `${site.url}/blog/${post.slug}/`,
+  }];
+  return pageShell({
+    site,
+    title: `${post.title} | FileForma Blog`,
+    description: post.description,
+    pathname: `/blog/${post.slug}/`,
+    jsonLd,
+    children: `<main>
+      <article class="article-page">
+        <p class="eyebrow">${escapeHtml(post.category)}</p>
+        <h1>${escapeHtml(post.title)}</h1>
+        <p class="lede">${escapeHtml(post.description)}</p>
+        ${post.sections.map((section) => `<section><h2>${escapeHtml(section.heading)}</h2>${section.body.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}</section>`).join("")}
+      </article>
+      <section class="related-tools">
+        <h2>Useful tools for this guide</h2>
+        <div class="tool-list compact">${relatedTools.map(toolCard).join("")}</div>
+      </section>
     </main>`,
   });
 }

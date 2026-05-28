@@ -162,6 +162,7 @@ a {
   white-space: nowrap;
 }
 
+.home-hero,
 .hero,
 .tool-hero {
   display: grid;
@@ -175,6 +176,15 @@ a {
     var(--paper);
 }
 
+.home-hero {
+  grid-template-columns: minmax(280px, 0.52fr) minmax(0, 1.48fr);
+  gap: 30px;
+  align-items: start;
+  min-height: auto;
+  padding-top: 42px;
+  padding-bottom: 34px;
+}
+
 .hero {
   min-height: calc(100vh - 72px);
 }
@@ -186,6 +196,15 @@ a {
 .hero-copy,
 .plain-page {
   max-width: 760px;
+}
+
+.compact-copy h1 {
+  max-width: 640px;
+  font-size: clamp(38px, 5vw, 58px);
+}
+
+.compact-copy .lede {
+  max-width: 560px;
 }
 
 .eyebrow,
@@ -271,6 +290,7 @@ h3 {
 }
 
 .hero-panel,
+.quick-panel,
 .converter-panel {
   width: 100%;
   padding: 22px;
@@ -286,17 +306,33 @@ h3 {
   color: var(--red);
 }
 
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .tool-section,
+.tool-directory,
 .content-grid,
 .faq-section,
 .related-tools,
-.plain-page {
+.plain-page,
+.blog-strip,
+.blog-grid,
+.article-page {
   padding: 64px 6vw;
 }
 
 .tool-section,
+.tool-directory,
 .faq-section {
   background: var(--white);
+}
+
+.tool-directory {
+  padding-top: 34px;
+  padding-bottom: 42px;
 }
 
 .tool-list {
@@ -309,6 +345,11 @@ h3 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.directory-list {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .tool-card {
   display: grid;
   gap: 10px;
@@ -317,6 +358,34 @@ h3 {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
+}
+
+.mini-tool-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 82px;
+  padding: 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-weight: 850;
+}
+
+.quick-panel .mini-tool-card,
+.tool-directory .mini-tool-card {
+  box-shadow: none;
+}
+
+.mini-tool-card .tool-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+}
+
+.mini-tool-card strong {
+  font-size: 15px;
+  line-height: 1.25;
 }
 
 .tool-icon {
@@ -360,11 +429,18 @@ h3 {
   transition: 160ms ease;
 }
 
+.mini-tool-card:hover {
+  border-color: rgba(229, 50, 45, 0.45);
+  color: var(--red-dark);
+  transform: translateY(-1px);
+  transition: 160ms ease;
+}
+
 .tool-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 20px 0 30px;
+  margin: 0 0 28px;
 }
 
 .tool-tabs a {
@@ -387,7 +463,7 @@ h3 {
 }
 
 .tool-group + .tool-group {
-  margin-top: 36px;
+  margin-top: 28px;
 }
 
 .converter-panel {
@@ -577,6 +653,67 @@ details p {
   min-height: 48vh;
 }
 
+.blog-strip {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr);
+  gap: 24px;
+  background: var(--paper);
+}
+
+.blog-card-list,
+.blog-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.blog-card-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.blog-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-top: 0;
+}
+
+.blog-card {
+  display: block;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.blog-card strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.blog-card span,
+.article-page p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.article-page {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--paper);
+}
+
+.article-page h1 {
+  font-size: clamp(38px, 5vw, 64px);
+}
+
+.article-page section {
+  margin-top: 34px;
+}
+
+.article-page h2 {
+  font-size: clamp(26px, 3vw, 36px);
+}
+
 .footer {
   min-height: 120px;
   background: var(--ink);
@@ -600,14 +737,20 @@ details p {
 }
 
 @media (max-width: 980px) {
+  .home-hero,
   .hero,
   .tool-hero,
-  .content-grid {
+  .content-grid,
+  .blog-strip {
     grid-template-columns: 1fr;
   }
 
+  .quick-grid,
+  .directory-list,
   .tool-list,
-  .tool-list.compact {
+  .tool-list.compact,
+  .blog-card-list,
+  .blog-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -627,13 +770,18 @@ details p {
     flex-wrap: wrap;
   }
 
+  .home-hero,
   .hero,
   .tool-hero,
   .tool-section,
+  .tool-directory,
   .content-grid,
   .faq-section,
   .related-tools,
-  .plain-page {
+  .plain-page,
+  .blog-strip,
+  .blog-grid,
+  .article-page {
     padding-right: 18px;
     padding-left: 18px;
   }
@@ -642,8 +790,12 @@ details p {
     font-size: 42px;
   }
 
+  .quick-grid,
+  .directory-list,
   .tool-list,
-  .tool-list.compact {
+  .tool-list.compact,
+  .blog-card-list,
+  .blog-grid {
     grid-template-columns: 1fr;
   }
 

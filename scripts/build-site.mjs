@@ -1,8 +1,8 @@
 import { mkdir, writeFile, copyFile, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { imageTools, pdfTools, legalPages, site } from "../src/site-data.mjs";
-import { renderHome, renderToolPage, renderLegalPage } from "../src/templates.mjs";
+import { imageTools, pdfTools, legalPages, blogPosts, site } from "../src/site-data.mjs";
+import { renderHome, renderToolPage, renderLegalPage, renderBlogIndex, renderBlogPost } from "../src/templates.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(root, "dist");
@@ -26,7 +26,7 @@ async function main() {
   const apiBase = process.env.CONVERT_API_BASE || "http://localhost:8000";
   await writeFile(join(dist, "assets", "config.js"), `window.CONVERT_API_BASE = ${JSON.stringify(apiBase)};\n`, "utf8");
 
-  await writePage("/", renderHome({ site, imageTools, pdfTools }));
+  await writePage("/", renderHome({ site, imageTools, pdfTools, blogPosts }));
 
   for (const tool of allTools) {
     await writePage(`/${tool.slug}/`, renderToolPage({ site, tool, allTools }));
@@ -36,7 +36,20 @@ async function main() {
     await writePage(`/${page.slug}/`, renderLegalPage({ site, page, allTools }));
   }
 
-  const sitemapUrls = ["/", ...allTools.map((tool) => `/${tool.slug}/`), ...legalPages.map((page) => `/${page.slug}/`)];
+  await writePage("/blog/", renderBlogIndex({ site, blogPosts }));
+
+  for (const post of blogPosts) {
+    const relatedTools = post.relatedTools.map((slug) => allTools.find((tool) => tool.slug === slug)).filter(Boolean);
+    await writePage(`/blog/${post.slug}/`, renderBlogPost({ site, post, relatedTools }));
+  }
+
+  const sitemapUrls = [
+    "/",
+    ...allTools.map((tool) => `/${tool.slug}/`),
+    ...legalPages.map((page) => `/${page.slug}/`),
+    "/blog/",
+    ...blogPosts.map((post) => `/blog/${post.slug}/`),
+  ];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls
     .map((pathname) => `  <url><loc>${site.url}${pathname}</loc></url>`)
     .join("\n")}\n</urlset>\n`;
