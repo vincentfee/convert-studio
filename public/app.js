@@ -44,6 +44,7 @@ const I18N = {
     "error.failed": "Conversion failed.",
     "error.rejected": "The conversion server rejected this file.",
     "error.timeout": "Conversion failed or timed out.",
+    "error.serverUnavailable": "The conversion server is unavailable. Please try again shortly.",
     "error.compareTwo": "Choose exactly two PDF files for comparison.",
   },
   es: {

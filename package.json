@@ -6,6 +6,8 @@
   "scripts": {
     "build": "node scripts/build-site.mjs",
     "dev": "node scripts/dev-server.mjs",
-    "validate:blog": "node scripts/validate-blog-content.mjs"
+    "validate:blog": "node scripts/validate-blog-content.mjs",
+    "test:server": "python3 scripts/test-online-converters.py",
+    "test:browser": "node scripts/test-browser-converters.mjs"
   }
 }
