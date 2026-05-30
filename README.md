@@ -13,6 +13,17 @@ npm run dev
 
 The static site is served from `dist/` at `http://localhost:4173`.
 
+## Google Analytics
+
+The static build reads `GA_MEASUREMENT_ID` at build time and injects the GA4 Google tag when the value is present.
+
+```powershell
+$env:GA_MEASUREMENT_ID="G-XXXXXXXXXX"
+npm run build
+```
+
+On Render, add `GA_MEASUREMENT_ID` to the `convert-studio-web` environment variables, then redeploy the static site.
+
 ## Run the PDF backend
 
 The backend is designed for Docker because PDF/Office conversion needs system tools such as LibreOffice and Ghostscript.

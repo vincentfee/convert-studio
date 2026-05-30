@@ -2,6 +2,7 @@ export const site = {
   name: "FileForma",
   url: "https://fileforma.com",
   description: "Free image and PDF conversion tools from FileForma, built for quick, private, and reliable file workflows.",
+  analyticsId: process.env.GA_MEASUREMENT_ID || "",
 };
 
 const sharedImageFaq = [
@@ -681,7 +682,7 @@ export const legalPages = [
     body: [
       "Browser-based tools process files locally on your device and do not upload them to our servers.",
       "Server-based PDF tools temporarily process files only to complete the requested conversion. Temporary files are scheduled for deletion after 30 minutes.",
-      "We may use privacy-conscious analytics and advertising partners. Advertising placements must not interfere with uploads, conversion actions, or downloads.",
+      "We may use Google Analytics to understand aggregate site usage, popular tools, page performance, and traffic sources. Analytics data helps us improve FileForma, and advertising placements must not interfere with uploads, conversion actions, or downloads.",
     ],
   },
   {

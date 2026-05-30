@@ -56,9 +56,24 @@ function languageSwitcher(className = "") {
   </label>`;
 }
 
+function analyticsScripts(site) {
+  const measurementId = String(site.analyticsId || "").trim();
+  if (!/^(G|AW)-[A-Z0-9-]+$/i.test(measurementId)) return "";
+  const encodedId = encodeURIComponent(measurementId);
+  const safeId = JSON.stringify(measurementId);
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${encodedId}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', ${safeId});
+    </script>`;
+}
+
 function pageShell({ site, title, description, pathname, children, jsonLd = [] }) {
   const canonical = `${site.url}${pathname}`;
   const schema = jsonLd.map((item) => `<script type="application/ld+json">${JSON.stringify(item)}</script>`).join("\n");
+  const analytics = analyticsScripts(site);
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -69,6 +84,7 @@ function pageShell({ site, title, description, pathname, children, jsonLd = [] }
     <link rel="canonical" href="${canonical}" />
     <link rel="stylesheet" href="/assets/app.css" />
     ${schema}
+    ${analytics}
   </head>
   <body>
     <header class="topbar">
