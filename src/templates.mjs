@@ -146,15 +146,7 @@ function miniToolCard(tool) {
 
 function converterBox(tool) {
   const multiple = ["merge-pdf", "image-to-pdf", "compare-pdf"].includes(tool.action);
-  return `<section class="converter-panel" data-tool='${escapeHtml(JSON.stringify(tool))}'>
-    <div class="mode-pill" data-i18n="${tool.mode === "browser" ? "privacy.local" : "privacy.temporary"}">${tool.mode === "browser" ? "Files stay on your device" : "Files deleted after 30 minutes"}</div>
-    <label class="dropzone">
-      <input class="file-input" type="file" ${multiple ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
-      <span class="upload-icon" aria-hidden="true">${iconSvg("upload")}</span>
-      <strong data-i18n="upload.title">Drop files here or choose files</strong>
-      <small data-i18n="${tool.mode === "browser" ? "upload.local" : "upload.server"}">${tool.mode === "browser" ? "Files stay on this device." : "Maximum 50 MB per file. Files expire after 30 minutes."}</small>
-    </label>
-    ${tool.category === "PDF" ? '<div class="pdf-preview" hidden><div class="pdf-preview-head"><strong>PDF preview</strong><span class="pdf-preview-name"></span></div><div class="preview-file-list"></div><iframe class="pdf-preview-frame" title="PDF preview"></iframe></div>' : ""}
+  const controls = `
     ${["split-pdf", "extract-pdf-pages"].includes(tool.action) ? '<label class="option-row">Pages to keep <input class="pages-input" type="text" placeholder="Example: 1-3,5" /></label>' : ""}
     ${tool.action === "remove-pdf-pages" ? '<label class="option-row">Pages to remove <input class="pages-input" type="text" placeholder="Example: 2,4-6" /></label>' : ""}
     ${tool.action === "organize-pdf" ? '<label class="option-row">New page order <input class="pages-input" type="text" placeholder="Example: 3,1,2,4-6" /></label>' : ""}
@@ -169,7 +161,29 @@ function converterBox(tool) {
     ${tool.action === "resize-image" ? '<label class="option-row">Max width <input class="width-input" type="number" min="100" max="5000" value="1600" /></label>' : ""}
     <button class="primary-btn convert-btn" type="button" data-i18n="button.convert">Convert now</button>
     <p class="status-text" data-i18n="status.choose">Choose a file to start.</p>
-    <div class="queue-list"></div>
+    <div class="queue-list"></div>`;
+  return `<section class="converter-panel" data-tool='${escapeHtml(JSON.stringify(tool))}'>
+    <div class="mode-pill" data-i18n="${tool.mode === "browser" ? "privacy.local" : "privacy.temporary"}">${tool.mode === "browser" ? "Files stay on your device" : "Files deleted after 30 minutes"}</div>
+    <label class="dropzone">
+      <input class="file-input" type="file" ${multiple ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
+      <span class="upload-icon" aria-hidden="true">${iconSvg("upload")}</span>
+      <strong data-i18n="upload.title">Drop files here or choose files</strong>
+      <small data-i18n="${tool.mode === "browser" ? "upload.local" : "upload.server"}">${tool.mode === "browser" ? "Files stay on this device." : "Maximum 50 MB per file. Files expire after 30 minutes."}</small>
+    </label>
+    ${tool.category === "PDF" ? `<div class="pdf-workspace" hidden>
+      <div class="pdf-preview">
+        <div class="pdf-preview-head"><strong>Preview selected PDF</strong><span class="pdf-preview-name"></span></div>
+        <div class="preview-file-list"></div>
+        <iframe class="pdf-preview-frame" title="PDF preview"></iframe>
+      </div>
+      <div class="pdf-workflow">
+        <div class="workflow-step">
+          <strong>Step 2: adjust this ${escapeHtml(tool.title)}</strong>
+          <span>Use the preview on the left while choosing pages or entering edit details.</span>
+        </div>
+        ${controls}
+      </div>
+    </div>` : controls}
   </section>`;
 }
 

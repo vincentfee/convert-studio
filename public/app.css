@@ -500,6 +500,24 @@ h3 {
     repeating-linear-gradient(90deg, var(--red), var(--red) 12px, transparent 12px, transparent 22px) border-box;
 }
 
+.converter-panel.has-pdf-file .dropzone {
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 92px;
+  place-items: center start;
+  align-content: center;
+  padding: 16px;
+  text-align: left;
+}
+
+.converter-panel.has-pdf-file .dropzone strong {
+  font-size: 16px;
+}
+
+.converter-panel.has-pdf-file .dropzone small {
+  grid-column: 2;
+  margin-top: -8px;
+}
+
 .file-input {
   position: absolute;
   width: 1px;
@@ -579,6 +597,39 @@ details p {
   border-radius: 8px;
 }
 
+.pdf-workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 1.15fr) minmax(260px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.pdf-workspace[hidden] {
+  display: none;
+}
+
+.pdf-workflow {
+  display: grid;
+  gap: 14px;
+  position: sticky;
+  top: 92px;
+}
+
+.workflow-step {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  background: #f9fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.workflow-step span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .pdf-preview {
   display: grid;
   gap: 12px;
@@ -623,8 +674,8 @@ details p {
 
 .pdf-preview-frame {
   width: 100%;
-  height: min(64vh, 520px);
-  min-height: 360px;
+  height: min(72vh, 640px);
+  min-height: 480px;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -796,6 +847,18 @@ details p {
   .content-grid,
   .blog-strip {
     grid-template-columns: 1fr;
+  }
+
+  .pdf-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .pdf-workflow {
+    position: static;
+  }
+
+  .pdf-preview-frame {
+    min-height: 420px;
   }
 
   .quick-grid,

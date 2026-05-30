@@ -116,11 +116,13 @@ function isPdfFile(file) {
 
 function clearPdfPreview(panel) {
   const preview = panel.querySelector(".pdf-preview");
+  const workspace = panel.querySelector(".pdf-workspace");
   if (!preview) return;
   const previousUrl = preview.dataset.objectUrl;
   if (previousUrl) URL.revokeObjectURL(previousUrl);
   preview.dataset.objectUrl = "";
-  preview.hidden = true;
+  panel.classList.remove("has-pdf-file");
+  if (workspace) workspace.hidden = true;
   const frame = preview.querySelector(".pdf-preview-frame");
   if (frame) frame.removeAttribute("src");
   preview.querySelector(".pdf-preview-name").textContent = "";
@@ -133,6 +135,9 @@ function renderPdfPreview(panel, files) {
   clearPdfPreview(panel);
   const pdfFiles = files.filter(isPdfFile);
   if (!pdfFiles.length) return;
+  const workspace = panel.querySelector(".pdf-workspace");
+  panel.classList.add("has-pdf-file");
+  if (workspace) workspace.hidden = false;
 
   const list = preview.querySelector(".preview-file-list");
   list.replaceChildren(...pdfFiles.slice(0, 2).map((file, index) => {
@@ -145,7 +150,6 @@ function renderPdfPreview(panel, files) {
   preview.dataset.objectUrl = url;
   preview.querySelector(".pdf-preview-name").textContent = pdfFiles[0].name;
   preview.querySelector(".pdf-preview-frame").src = `${url}#toolbar=0&navpanes=0`;
-  preview.hidden = false;
 }
 
 function validateFiles(files, tool, allowMultiple) {
