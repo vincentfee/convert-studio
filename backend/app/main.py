@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 import uuid
+from difflib import unified_diff
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated
@@ -29,6 +30,12 @@ ALLOWED_TOOLS = {
     "powerpoint-to-pdf",
     "excel-to-pdf",
     "pdf-to-word",
+    "edit-pdf",
+    "redact-pdf",
+    "sign-pdf",
+    "ocr-pdf",
+    "translate-pdf",
+    "compare-pdf",
     "compress-pdf",
     "repair-pdf",
     "pdf-to-jpg",
@@ -51,6 +58,12 @@ ALLOWED_EXTENSIONS = {
     "powerpoint-to-pdf": {".ppt", ".pptx"},
     "excel-to-pdf": {".xls", ".xlsx"},
     "pdf-to-word": {".pdf"},
+    "edit-pdf": {".pdf"},
+    "redact-pdf": {".pdf"},
+    "sign-pdf": {".pdf"},
+    "ocr-pdf": {".pdf"},
+    "translate-pdf": {".pdf"},
+    "compare-pdf": {".pdf"},
     "compress-pdf": {".pdf"},
     "repair-pdf": {".pdf"},
     "pdf-to-jpg": {".pdf"},
@@ -388,6 +401,167 @@ def protect_pdf(inputs: list[Path], folder: Path, password: str | None) -> Path:
     return output
 
 
+def normalize_page_number(value: str | None, total: int) -> int:
+    try:
+        page = int(value or "1")
+    except ValueError as exc:
+        raise RuntimeError("Page must be a number.") from exc
+    if page < 1 or page > total:
+        raise RuntimeError(f"Page must be between 1 and {total}.")
+    return page - 1
+
+
+def edit_pdf(inputs: list[Path], folder: Path, text: str | None, page: str | None) -> Path:
+    label = (text or "").strip()[:120]
+    if not label:
+        raise RuntimeError("Enter text to add to the PDF.")
+    source = inputs[0]
+    output = folder / f"{source.stem}-edited.pdf"
+    document = fitz.open(source)
+    try:
+        target = document[normalize_page_number(page, document.page_count)]
+        target.insert_textbox(
+            fitz.Rect(72, 72, target.rect.width - 72, 124),
+            label,
+            fontsize=14,
+            color=(0.08, 0.12, 0.16),
+            align=fitz.TEXT_ALIGN_LEFT,
+        )
+        document.save(output)
+    finally:
+        document.close()
+    return output
+
+
+def redact_pdf(inputs: list[Path], folder: Path, text: str | None) -> Path:
+    query = (text or "").strip()[:120]
+    if not query:
+        raise RuntimeError("Enter the text that should be redacted.")
+    source = inputs[0]
+    output = folder / f"{source.stem}-redacted.pdf"
+    document = fitz.open(source)
+    matches = 0
+    try:
+        for page in document:
+            page_matches = 0
+            for area in page.search_for(query):
+                page_matches += 1
+                matches += 1
+                page.add_redact_annot(area, fill=(0, 0, 0))
+            if page_matches:
+                page.apply_redactions()
+        if matches == 0:
+            raise RuntimeError("No matching text was found in this PDF.")
+        document.save(output)
+    finally:
+        document.close()
+    return output
+
+
+def sign_pdf(inputs: list[Path], folder: Path, text: str | None, page: str | None) -> Path:
+    signature = (text or "").strip()[:80]
+    if not signature:
+        raise RuntimeError("Enter a signature name or approval text.")
+    source = inputs[0]
+    output = folder / f"{source.stem}-signed.pdf"
+    document = fitz.open(source)
+    try:
+        target = document[normalize_page_number(page, document.page_count)]
+        rect = target.rect
+        target.insert_textbox(
+            fitz.Rect(rect.width * 0.52, rect.height - 112, rect.width - 54, rect.height - 52),
+            signature,
+            fontsize=22,
+            color=(0.05, 0.18, 0.42),
+            align=fitz.TEXT_ALIGN_CENTER,
+        )
+        target.draw_line(
+            fitz.Point(rect.width * 0.52, rect.height - 48),
+            fitz.Point(rect.width - 54, rect.height - 48),
+            color=(0.05, 0.18, 0.42),
+            width=1,
+        )
+        document.save(output)
+    finally:
+        document.close()
+    return output
+
+
+def extract_pdf_text_by_page(source: Path, use_ocr: bool = False) -> list[str]:
+    document = fitz.open(source)
+    pages: list[str] = []
+    try:
+        for page in document:
+            text = page.get_text("text").strip()
+            if use_ocr and not text:
+                try:
+                    text_page = page.get_textpage_ocr()
+                    text = page.get_text("text", textpage=text_page).strip()
+                except Exception as exc:
+                    raise RuntimeError(
+                        "OCR is not available on this server yet. Text-based PDFs can still be extracted."
+                    ) from exc
+            pages.append(text)
+    finally:
+        document.close()
+    return pages
+
+
+def save_text_report(output: Path, title: str, sections: list[str]) -> Path:
+    content = [title, "=" * len(title), ""]
+    content.extend(sections)
+    output.write_text("\n".join(content).strip() + "\n", encoding="utf-8")
+    return output
+
+
+def ocr_pdf(inputs: list[Path], folder: Path) -> Path:
+    source = inputs[0]
+    pages = extract_pdf_text_by_page(source, use_ocr=True)
+    if not any(page.strip() for page in pages):
+        raise RuntimeError("No readable text was found in this PDF.")
+    sections = []
+    for index, text in enumerate(pages, start=1):
+        sections.append(f"--- Page {index} ---\n{text or '[No text found]'}\n")
+    return save_text_report(folder / f"{source.stem}-ocr.txt", "OCR text extracted by FileForma", sections)
+
+
+def translate_pdf(inputs: list[Path], folder: Path, target_language: str | None) -> Path:
+    source = inputs[0]
+    target = (target_language or "English").strip()[:40] or "English"
+    pages = extract_pdf_text_by_page(source)
+    if not any(page.strip() for page in pages):
+        raise RuntimeError("No selectable text was found. Try OCR PDF first for scanned documents.")
+    sections = [
+        f"Target language: {target}",
+        "This first-stage tool extracts PDF text for translation while keeping page references.",
+        "",
+    ]
+    for index, text in enumerate(pages, start=1):
+        sections.append(f"--- Page {index} ---\n{text or '[No text found]'}\n")
+    return save_text_report(folder / f"{source.stem}-translation-ready.txt", "Translation-ready PDF text", sections)
+
+
+def compare_pdf(inputs: list[Path], folder: Path) -> Path:
+    if len(inputs) != 2:
+        raise RuntimeError("Compare PDF requires exactly two PDF files.")
+    first, second = inputs
+    first_pages = extract_pdf_text_by_page(first)
+    second_pages = extract_pdf_text_by_page(second)
+    first_text = "\n\n".join(first_pages).splitlines()
+    second_text = "\n\n".join(second_pages).splitlines()
+    diff = list(unified_diff(first_text, second_text, fromfile=first.name, tofile=second.name, lineterm=""))
+    sections = [
+        f"File A: {first.name}",
+        f"File B: {second.name}",
+        f"Pages in A: {len(first_pages)}",
+        f"Pages in B: {len(second_pages)}",
+        "",
+        "Text differences:",
+        "\n".join(diff[:2000]) if diff else "No text differences were found.",
+    ]
+    return save_text_report(folder / "pdf-comparison-report.txt", "PDF comparison report", sections)
+
+
 def process_job(
     job_id: str,
     tool: str,
@@ -397,6 +571,8 @@ def process_job(
     text: str | None,
     margin: str | None,
     password: str | None,
+    page: str | None,
+    target_language: str | None,
 ) -> None:
     folder = job_dir(job_id)
     jobs[job_id]["status"] = "processing"
@@ -407,6 +583,18 @@ def process_job(
             output = convert_office_to_pdf(inputs, folder)
         elif tool == "pdf-to-word":
             output = convert_pdf_to_word(inputs, folder)
+        elif tool == "edit-pdf":
+            output = edit_pdf(inputs, folder, text, page)
+        elif tool == "redact-pdf":
+            output = redact_pdf(inputs, folder, text)
+        elif tool == "sign-pdf":
+            output = sign_pdf(inputs, folder, text, page)
+        elif tool == "ocr-pdf":
+            output = ocr_pdf(inputs, folder)
+        elif tool == "translate-pdf":
+            output = translate_pdf(inputs, folder, target_language)
+        elif tool == "compare-pdf":
+            output = compare_pdf(inputs, folder)
         elif tool == "compress-pdf":
             output = compress_pdf(inputs, folder)
         elif tool == "repair-pdf":
@@ -466,13 +654,17 @@ async def create_job(
     text: Annotated[str | None, Form()] = None,
     margin: Annotated[str | None, Form()] = None,
     password: Annotated[str | None, Form()] = None,
+    page: Annotated[str | None, Form()] = None,
+    targetLanguage: Annotated[str | None, Form()] = None,
 ) -> dict:
     cleanup_expired()
     if tool not in ALLOWED_TOOLS:
         raise HTTPException(status_code=400, detail="Unsupported conversion tool.")
     if not files or len(files) > MAX_FILES:
         raise HTTPException(status_code=400, detail=f"Upload between 1 and {MAX_FILES} files.")
-    if tool != "merge-pdf" and len(files) > 1:
+    if tool == "compare-pdf" and len(files) != 2:
+        raise HTTPException(status_code=400, detail="Compare PDF requires exactly two PDF files.")
+    if tool not in {"merge-pdf", "compare-pdf"} and len(files) > 1:
         raise HTTPException(status_code=400, detail="This tool accepts one file at a time.")
     validate_file_names(tool, files)
     check_rate_limit(request.client.host if request.client else "unknown")
@@ -492,7 +684,19 @@ async def create_job(
         jobs.pop(job_id, None)
         raise
 
-    background_tasks.add_task(process_job, job_id, tool, inputs, pages, rotation, text, margin, password)
+    background_tasks.add_task(
+        process_job,
+        job_id,
+        tool,
+        inputs,
+        pages,
+        rotation,
+        text,
+        margin,
+        password,
+        page,
+        targetLanguage,
+    )
     return {"jobId": job_id, "status": "queued", "expiresInMinutes": EXPIRY_MINUTES}
 
 

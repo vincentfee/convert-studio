@@ -33,6 +33,7 @@ const I18N = {
     "error.failed": "Conversion failed.",
     "error.rejected": "The conversion server rejected this file.",
     "error.timeout": "Conversion failed or timed out.",
+    "error.compareTwo": "Choose exactly two PDF files for comparison.",
   },
   es: {
     "nav.imageTools": "Herramientas de imagen", "nav.pdfTools": "Herramientas PDF", "nav.privacy": "Privacidad", "footer.about": "Acerca de", "footer.terms": "Términos", "footer.contact": "Contacto", "privacy.local": "Los archivos quedan en tu dispositivo", "privacy.temporary": "Archivos eliminados tras 30 minutos", "upload.title": "Suelta archivos aquí o elígelos", "upload.local": "Los archivos permanecen en este dispositivo.", "upload.server": "Máximo 50 MB por archivo. Se eliminan tras 30 minutos.", "button.convert": "Convertir ahora", "button.download": "Descargar", "status.choose": "Elige un archivo para empezar.", "status.selected": "{count} archivo(s) seleccionado(s).", "status.starting": "Iniciando conversión.", "status.processing": "Procesando", "status.ready": "Listo", "status.complete": "Conversión completada.", "status.uploading": "Subiendo", "status.server": "Procesando en el servidor.", "status.expires": "Listo / expira en 30 minutos", "error.choose": "Elige al menos un archivo.", "error.one": "Esta herramienta acepta un archivo cada vez.", "error.max": "Añade hasta {max} archivos cada vez.", "error.large": "{name} supera los 50 MB.", "error.imageRead": "No se pudo leer la imagen.", "error.failed": "La conversión falló.", "error.rejected": "El servidor rechazó este archivo.", "error.timeout": "La conversión falló o agotó el tiempo.",
@@ -109,8 +110,47 @@ function setStatus(panel, text) {
   panel.querySelector(".status-text").textContent = text;
 }
 
-function validateFiles(files, allowMultiple) {
+function isPdfFile(file) {
+  return file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+}
+
+function clearPdfPreview(panel) {
+  const preview = panel.querySelector(".pdf-preview");
+  if (!preview) return;
+  const previousUrl = preview.dataset.objectUrl;
+  if (previousUrl) URL.revokeObjectURL(previousUrl);
+  preview.dataset.objectUrl = "";
+  preview.hidden = true;
+  const frame = preview.querySelector(".pdf-preview-frame");
+  if (frame) frame.removeAttribute("src");
+  preview.querySelector(".pdf-preview-name").textContent = "";
+  preview.querySelector(".preview-file-list").replaceChildren();
+}
+
+function renderPdfPreview(panel, files) {
+  const preview = panel.querySelector(".pdf-preview");
+  if (!preview) return;
+  clearPdfPreview(panel);
+  const pdfFiles = files.filter(isPdfFile);
+  if (!pdfFiles.length) return;
+
+  const list = preview.querySelector(".preview-file-list");
+  list.replaceChildren(...pdfFiles.slice(0, 2).map((file, index) => {
+    const item = document.createElement("span");
+    item.textContent = `${index + 1}. ${file.name}`;
+    return item;
+  }));
+
+  const url = URL.createObjectURL(pdfFiles[0]);
+  preview.dataset.objectUrl = url;
+  preview.querySelector(".pdf-preview-name").textContent = pdfFiles[0].name;
+  preview.querySelector(".pdf-preview-frame").src = `${url}#toolbar=0&navpanes=0`;
+  preview.hidden = false;
+}
+
+function validateFiles(files, tool, allowMultiple) {
   if (!files.length) throw new Error(t("error.choose"));
+  if (tool.action === "compare-pdf" && files.length !== 2) throw new Error(t("error.compareTwo"));
   if (!allowMultiple && files.length > 1) throw new Error(t("error.one"));
   if (files.length > MAX_FILES) throw new Error(t("error.max", { max: MAX_FILES }));
   for (const file of files) {
@@ -262,6 +302,10 @@ async function runServerTool(panel, tool, files) {
   if (rotationInput) form.append("rotation", rotationInput.value || "90");
   const textInput = panel.querySelector(".text-input");
   if (textInput) form.append("text", textInput.value || "DRAFT");
+  const pageInput = panel.querySelector(".page-input");
+  if (pageInput) form.append("page", pageInput.value || "1");
+  const targetLanguageInput = panel.querySelector(".target-language-input");
+  if (targetLanguageInput) form.append("targetLanguage", targetLanguageInput.value || "English");
   const marginInput = panel.querySelector(".margin-input");
   if (marginInput) form.append("margin", marginInput.value || "24");
   const passwordInput = panel.querySelector(".password-input");
@@ -307,15 +351,19 @@ function setupPanel(panel) {
     event.preventDefault();
     dropzone.classList.remove("is-dragging");
     input.files = event.dataTransfer.files;
+    renderPdfPreview(panel, Array.from(input.files || []));
     setStatus(panel, t("status.selected", { count: input.files.length }));
   });
-  input.addEventListener("change", () => setStatus(panel, t("status.selected", { count: input.files.length })));
+  input.addEventListener("change", () => {
+    renderPdfPreview(panel, Array.from(input.files || []));
+    setStatus(panel, t("status.selected", { count: input.files.length }));
+  });
 
   button.addEventListener("click", async () => {
     button.disabled = true;
     try {
       const files = Array.from(input.files || []);
-      validateFiles(files, input.multiple);
+      validateFiles(files, tool, input.multiple);
       setStatus(panel, t("status.starting"));
       if (tool.mode === "browser") {
         await runBrowserTool(panel, tool, files);

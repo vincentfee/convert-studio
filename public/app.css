@@ -529,6 +529,8 @@ h3 {
 .dropzone small,
 .status-text,
 .file-state,
+.pdf-preview-name,
+.preview-file-list,
 .plain-page p,
 .content-grid p,
 .content-grid li,
@@ -572,6 +574,57 @@ details p {
 .option-row select {
   min-height: 46px;
   padding: 0 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pdf-preview {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: #f9fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pdf-preview[hidden] {
+  display: none;
+}
+
+.pdf-preview-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.pdf-preview-name {
+  max-width: min(52vw, 460px);
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-file-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.preview-file-list span {
+  padding: 6px 8px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pdf-preview-frame {
+  width: 100%;
+  height: min(64vh, 520px);
+  min-height: 360px;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;

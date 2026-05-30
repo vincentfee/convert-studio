@@ -145,7 +145,7 @@ function miniToolCard(tool) {
 }
 
 function converterBox(tool) {
-  const multiple = tool.action === "merge-pdf" || tool.action === "image-to-pdf";
+  const multiple = ["merge-pdf", "image-to-pdf", "compare-pdf"].includes(tool.action);
   return `<section class="converter-panel" data-tool='${escapeHtml(JSON.stringify(tool))}'>
     <div class="mode-pill" data-i18n="${tool.mode === "browser" ? "privacy.local" : "privacy.temporary"}">${tool.mode === "browser" ? "Files stay on your device" : "Files deleted after 30 minutes"}</div>
     <label class="dropzone">
@@ -154,12 +154,17 @@ function converterBox(tool) {
       <strong data-i18n="upload.title">Drop files here or choose files</strong>
       <small data-i18n="${tool.mode === "browser" ? "upload.local" : "upload.server"}">${tool.mode === "browser" ? "Files stay on this device." : "Maximum 50 MB per file. Files expire after 30 minutes."}</small>
     </label>
+    ${tool.category === "PDF" ? '<div class="pdf-preview" hidden><div class="pdf-preview-head"><strong>PDF preview</strong><span class="pdf-preview-name"></span></div><div class="preview-file-list"></div><iframe class="pdf-preview-frame" title="PDF preview"></iframe></div>' : ""}
     ${["split-pdf", "extract-pdf-pages"].includes(tool.action) ? '<label class="option-row">Pages to keep <input class="pages-input" type="text" placeholder="Example: 1-3,5" /></label>' : ""}
     ${tool.action === "remove-pdf-pages" ? '<label class="option-row">Pages to remove <input class="pages-input" type="text" placeholder="Example: 2,4-6" /></label>' : ""}
     ${tool.action === "organize-pdf" ? '<label class="option-row">New page order <input class="pages-input" type="text" placeholder="Example: 3,1,2,4-6" /></label>' : ""}
     ${tool.action === "rotate-pdf" ? '<label class="option-row">Rotation <select class="rotation-input"><option value="90">90 degrees</option><option value="180">180 degrees</option><option value="270">270 degrees</option></select></label>' : ""}
+    ${tool.action === "edit-pdf" ? '<label class="option-row">Text to add <input class="text-input" type="text" value="Edited with FileForma" maxlength="120" /></label><label class="option-row">Page <input class="page-input" type="number" min="1" value="1" /></label>' : ""}
     ${tool.action === "add-watermark" ? '<label class="option-row">Watermark text <input class="text-input" type="text" value="DRAFT" maxlength="80" /></label>' : ""}
     ${tool.action === "crop-pdf" ? '<label class="option-row">Crop margin in points <input class="margin-input" type="number" min="0" max="144" value="24" /></label>' : ""}
+    ${tool.action === "redact-pdf" ? '<label class="option-row">Text to redact <input class="text-input" type="text" placeholder="Name, email, account number" maxlength="120" /></label>' : ""}
+    ${tool.action === "sign-pdf" ? '<label class="option-row">Signature text <input class="text-input" type="text" placeholder="Your name" maxlength="80" /></label><label class="option-row">Page <input class="page-input" type="number" min="1" value="1" /></label>' : ""}
+    ${tool.action === "translate-pdf" ? '<label class="option-row">Target language <select class="target-language-input"><option value="English">English</option><option value="Spanish">Spanish</option><option value="French">French</option><option value="German">German</option><option value="Portuguese">Portuguese</option><option value="Japanese">Japanese</option><option value="Korean">Korean</option><option value="Simplified Chinese">Simplified Chinese</option><option value="Traditional Chinese">Traditional Chinese</option></select></label>' : ""}
     ${["protect-pdf", "unlock-pdf"].includes(tool.action) ? '<label class="option-row">Password <input class="password-input" type="password" placeholder="Enter password" /></label>' : ""}
     ${tool.action === "resize-image" ? '<label class="option-row">Max width <input class="width-input" type="number" min="100" max="5000" value="1600" /></label>' : ""}
     <button class="primary-btn convert-btn" type="button" data-i18n="button.convert">Convert now</button>
