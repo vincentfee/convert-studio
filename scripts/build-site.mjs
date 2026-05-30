@@ -3,10 +3,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { imageTools, pdfTools, legalPages, blogPosts, site } from "../src/site-data.mjs";
 import { renderHome, renderToolPage, renderLegalPage, renderBlogIndex, renderBlogPost } from "../src/templates.mjs";
+import { loadMarkdownBlogPosts } from "./load-blog-posts.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(root, "dist");
 const publicDir = join(root, "public");
+const contentDir = join(root, "content");
 
 const allTools = [...imageTools, ...pdfTools];
 
@@ -18,6 +20,8 @@ async function writePage(pathname, html) {
 }
 
 async function main() {
+  const publishedBlogPosts = await loadMarkdownBlogPosts({ contentRoot: contentDir, fallbackPosts: blogPosts });
+
   await rm(dist, { recursive: true, force: true });
   await mkdir(dist, { recursive: true });
   await mkdir(join(dist, "assets"), { recursive: true });
@@ -26,7 +30,7 @@ async function main() {
   const apiBase = process.env.CONVERT_API_BASE || "http://localhost:8000";
   await writeFile(join(dist, "assets", "config.js"), `window.CONVERT_API_BASE = ${JSON.stringify(apiBase)};\n`, "utf8");
 
-  await writePage("/", renderHome({ site, imageTools, pdfTools, blogPosts }));
+  await writePage("/", renderHome({ site, imageTools, pdfTools, blogPosts: publishedBlogPosts }));
 
   for (const tool of allTools) {
     await writePage(`/${tool.slug}/`, renderToolPage({ site, tool, allTools }));
@@ -36,9 +40,9 @@ async function main() {
     await writePage(`/${page.slug}/`, renderLegalPage({ site, page, allTools }));
   }
 
-  await writePage("/blog/", renderBlogIndex({ site, blogPosts }));
+  await writePage("/blog/", renderBlogIndex({ site, blogPosts: publishedBlogPosts }));
 
-  for (const post of blogPosts) {
+  for (const post of publishedBlogPosts) {
     const relatedTools = post.relatedTools.map((slug) => allTools.find((tool) => tool.slug === slug)).filter(Boolean);
     await writePage(`/blog/${post.slug}/`, renderBlogPost({ site, post, relatedTools }));
   }
@@ -48,7 +52,7 @@ async function main() {
     ...allTools.map((tool) => `/${tool.slug}/`),
     ...legalPages.map((page) => `/${page.slug}/`),
     "/blog/",
-    ...blogPosts.map((post) => `/blog/${post.slug}/`),
+    ...publishedBlogPosts.map((post) => `/blog/${post.slug}/`),
   ];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls
     .map((pathname) => `  <url><loc>${site.url}${pathname}</loc></url>`)

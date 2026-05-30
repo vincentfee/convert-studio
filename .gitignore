@@ -8,3 +8,4 @@ __pycache__/
 .test_deps/
 .test_node/
 test-artifacts/
+artifacts/
