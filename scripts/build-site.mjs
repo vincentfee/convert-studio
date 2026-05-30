@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { imageTools, pdfTools, legalPages, blogPosts, site } from "../src/site-data.mjs";
 import { renderHome, renderToolPage, renderLegalPage, renderBlogIndex, renderBlogPost } from "../src/templates.mjs";
-import { loadMarkdownBlogPosts } from "./load-blog-posts.mjs";
+import { blogLanguages, loadMarkdownBlogCatalog } from "./load-blog-posts.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const dist = join(root, "dist");
@@ -20,7 +20,8 @@ async function writePage(pathname, html) {
 }
 
 async function main() {
-  const publishedBlogPosts = await loadMarkdownBlogPosts({ contentRoot: contentDir, fallbackPosts: blogPosts });
+  const blogCatalog = await loadMarkdownBlogCatalog({ contentRoot: contentDir, fallbackPosts: blogPosts });
+  const publishedBlogPosts = blogCatalog.en || [];
 
   await rm(dist, { recursive: true, force: true });
   await mkdir(dist, { recursive: true });
@@ -40,19 +41,32 @@ async function main() {
     await writePage(`/${page.slug}/`, renderLegalPage({ site, page, allTools }));
   }
 
-  await writePage("/blog/", renderBlogIndex({ site, blogPosts: publishedBlogPosts }));
+  const blogPaths = [];
+  for (const language of blogLanguages) {
+    const languagePosts = blogCatalog[language.code] || [];
+    const prefix = language.prefix;
+    const alternates = blogLanguages.map((item) => ({
+      lang: item.code,
+      href: `${site.url}${item.prefix}/blog/`,
+    }));
+    await writePage(`${prefix}/blog/`, renderBlogIndex({ site, blogPosts: languagePosts, language, alternates }));
+    blogPaths.push(`${prefix}/blog/`);
 
-  for (const post of publishedBlogPosts) {
-    const relatedTools = post.relatedTools.map((slug) => allTools.find((tool) => tool.slug === slug)).filter(Boolean);
-    await writePage(`/blog/${post.slug}/`, renderBlogPost({ site, post, relatedTools }));
+    for (const post of languagePosts) {
+      const relatedTools = post.relatedTools.map((slug) => allTools.find((tool) => tool.slug === slug)).filter(Boolean);
+      const slugAlternates = blogLanguages
+        .filter((item) => (blogCatalog[item.code] || []).some((candidate) => candidate.slug === post.slug))
+        .map((item) => ({ lang: item.code, href: `${site.url}${item.prefix}/blog/${post.slug}/` }));
+      await writePage(`${prefix}/blog/${post.slug}/`, renderBlogPost({ site, post, relatedTools, language, alternates: slugAlternates }));
+      blogPaths.push(`${prefix}/blog/${post.slug}/`);
+    }
   }
 
   const sitemapUrls = [
     "/",
     ...allTools.map((tool) => `/${tool.slug}/`),
     ...legalPages.map((page) => `/${page.slug}/`),
-    "/blog/",
-    ...publishedBlogPosts.map((post) => `/blog/${post.slug}/`),
+    ...blogPaths,
   ];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls
     .map((pathname) => `  <url><loc>${site.url}${pathname}</loc></url>`)

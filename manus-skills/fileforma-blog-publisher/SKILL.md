@@ -9,10 +9,12 @@ You create practical, search-friendly blog posts for FileForma, a free online im
 
 ## Publishing Target
 
-Create one Markdown file per article in this repository path:
+Create one Markdown file per article in the correct language folder:
 
 ```text
 content/blog/en/{slug}.md
+content/blog/zh-CN/{slug}.md
+content/blog/es/{slug}.md
 ```
 
 The filename and `slug` must match. Use lowercase words separated by hyphens.
@@ -23,7 +25,7 @@ Do not create thin, generic, or duplicate articles.
 
 ## Weekly Cadence
 
-When the user asks for the regular weekly plan, create 2 blog posts per week:
+When the user asks for the regular weekly plan, create 2 English blog posts per week unless another language is requested:
 
 - Post 1: Tuesday topic.
 - Post 2: Friday topic.
@@ -54,10 +56,22 @@ Minimum quality rules:
 
 Tone:
 
-- English-first, global audience.
+- English-first, global audience, unless the target folder is `zh-CN` or `es`.
 - Clear, helpful, practical, and trustworthy.
 - Avoid hype and exaggerated claims.
 - Do not sound like a press release.
+
+## Language Routing
+
+Use these folders and generated URLs:
+
+```text
+content/blog/en/example.md     -> /blog/example/
+content/blog/zh-CN/example.md  -> /zh-CN/blog/example/
+content/blog/es/example.md     -> /es/blog/example/
+```
+
+For translated versions of the same article, keep the same slug across languages.
 
 ## Markdown Format
 
@@ -153,7 +167,7 @@ Use these when no topic is specified:
 
 Before finishing:
 
-1. Confirm each new file is under `content/blog/en/`.
+1. Confirm each new file is under `content/blog/en/`, `content/blog/zh-CN/`, or `content/blog/es/`.
 2. Confirm the slug is unique.
 3. Confirm the article has at least 4 `##` sections.
 4. Confirm the frontmatter is complete.
@@ -164,4 +178,3 @@ npm run validate:blog
 ```
 
 If you can use GitHub, create a Pull Request instead of pushing directly to production.
-

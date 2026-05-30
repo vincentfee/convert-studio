@@ -1,6 +1,12 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
+export const blogLanguages = [
+  { code: "en", label: "English", prefix: "" },
+  { code: "zh-CN", label: "Chinese Simplified", prefix: "/zh-CN" },
+  { code: "es", label: "Spanish", prefix: "/es" },
+];
+
 function parseFrontmatter(source, filePath) {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) throw new Error(`${filePath} is missing YAML frontmatter.`);
@@ -74,8 +80,8 @@ function validatePost(post, filePath) {
   if (!post.sections.length) throw new Error(`${filePath} needs at least one ## section.`);
 }
 
-export async function loadMarkdownBlogPosts({ contentRoot, fallbackPosts = [] }) {
-  const blogDir = join(contentRoot, "blog", "en");
+export async function loadMarkdownBlogPosts({ contentRoot, language = "en", fallbackPosts = [] }) {
+  const blogDir = join(contentRoot, "blog", language);
   let files = [];
   try {
     files = await readdir(blogDir);
@@ -97,6 +103,7 @@ export async function loadMarkdownBlogPosts({ contentRoot, fallbackPosts = [] })
       date: data.date,
       relatedTools: Array.isArray(data.relatedTools) ? data.relatedTools : [],
       sections: markdownToSections(markdown),
+      language,
     };
     validatePost(post, filePath);
     posts.push(post);
@@ -105,4 +112,16 @@ export async function loadMarkdownBlogPosts({ contentRoot, fallbackPosts = [] })
   const existingSlugs = new Set(posts.map((post) => post.slug));
   const merged = [...posts, ...fallbackPosts.filter((post) => !existingSlugs.has(post.slug))];
   return merged.sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
+}
+
+export async function loadMarkdownBlogCatalog({ contentRoot, fallbackPosts = [] }) {
+  const entries = await Promise.all(blogLanguages.map(async (language) => {
+    const posts = await loadMarkdownBlogPosts({
+      contentRoot,
+      language: language.code,
+      fallbackPosts: language.code === "en" ? fallbackPosts : [],
+    });
+    return [language.code, posts];
+  }));
+  return Object.fromEntries(entries);
 }

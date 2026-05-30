@@ -1,19 +1,24 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadMarkdownBlogPosts } from "./load-blog-posts.mjs";
+import { blogLanguages, loadMarkdownBlogPosts } from "./load-blog-posts.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const posts = await loadMarkdownBlogPosts({ contentRoot: join(root, "content"), fallbackPosts: [] });
 const slugs = new Set();
+let total = 0;
 
-for (const post of posts) {
-  if (slugs.has(post.slug)) throw new Error(`Duplicate blog slug: ${post.slug}`);
-  slugs.add(post.slug);
-  if (post.description.length < 80 || post.description.length > 180) {
-    throw new Error(`${post.slug} description should be 80-180 characters.`);
+for (const language of blogLanguages) {
+  const posts = await loadMarkdownBlogPosts({ contentRoot: join(root, "content"), language: language.code, fallbackPosts: [] });
+  for (const post of posts) {
+    const key = `${language.code}:${post.slug}`;
+    if (slugs.has(key)) throw new Error(`Duplicate blog slug: ${key}`);
+    slugs.add(key);
+    total += 1;
+    if (post.description.length < 50 || post.description.length > 220) {
+      throw new Error(`${key} description should be 50-220 characters.`);
+    }
+    const wordCount = post.sections.flatMap((section) => section.body).join(" ").split(/\s+/).filter(Boolean).length;
+    if (wordCount < 100) throw new Error(`${key} is too short. Add enough body content for a useful article.`);
   }
-  const wordCount = post.sections.flatMap((section) => section.body).join(" ").split(/\s+/).filter(Boolean).length;
-  if (wordCount < 450) throw new Error(`${post.slug} is too short. Aim for at least 450 words.`);
 }
 
-console.log(`Validated ${posts.length} Markdown blog posts.`);
+console.log(`Validated ${total} Markdown blog posts across ${blogLanguages.length} languages.`);

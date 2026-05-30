@@ -70,18 +70,22 @@ function analyticsScripts(site) {
     </script>`;
 }
 
-function pageShell({ site, title, description, pathname, children, jsonLd = [] }) {
+function pageShell({ site, title, description, pathname, children, jsonLd = [], lang = "en", alternates = [] }) {
   const canonical = `${site.url}${pathname}`;
   const schema = jsonLd.map((item) => `<script type="application/ld+json">${JSON.stringify(item)}</script>`).join("\n");
   const analytics = analyticsScripts(site);
+  const alternateLinks = alternates
+    .map((item) => `<link rel="alternate" hreflang="${escapeHtml(item.lang)}" href="${escapeHtml(item.href)}" />`)
+    .join("\n    ");
   return `<!doctype html>
-<html lang="en">
+<html lang="${escapeHtml(lang)}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeHtml(description)}" />
     <link rel="canonical" href="${canonical}" />
+    ${alternateLinks}
     <link rel="stylesheet" href="/assets/app.css" />
     ${schema}
     ${analytics}
@@ -337,12 +341,15 @@ export function renderToolPage({ site, tool, allTools }) {
   });
 }
 
-export function renderBlogIndex({ site, blogPosts }) {
+export function renderBlogIndex({ site, blogPosts, language = { code: "en", prefix: "" }, alternates = [] }) {
+  const prefix = language.prefix || "";
   return pageShell({
     site,
     title: "File Format and PDF Guides | FileForma Blog",
     description: "Practical guides about PDF files, image formats, office productivity, and file privacy.",
-    pathname: "/blog/",
+    pathname: `${prefix}/blog/`,
+    lang: language.code,
+    alternates,
     children: `<main>
       <section class="plain-page blog-index">
         <p class="eyebrow">FileForma Blog</p>
@@ -350,13 +357,14 @@ export function renderBlogIndex({ site, blogPosts }) {
         <p class="lede">Monthly advice for people who work with PDFs, images, office documents, uploads, and privacy-sensitive files.</p>
       </section>
       <section class="blog-grid">${blogPosts.map((post) => `<article class="blog-card large">
-        <a href="/blog/${post.slug}/"><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.description)}</span></a>
+        <a href="${prefix}/blog/${post.slug}/"><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.description)}</span></a>
       </article>`).join("")}</section>
     </main>`,
   });
 }
 
-export function renderBlogPost({ site, post, relatedTools }) {
+export function renderBlogPost({ site, post, relatedTools, language = { code: "en", prefix: "" }, alternates = [] }) {
+  const prefix = language.prefix || "";
   const jsonLd = [{
     "@context": "https://schema.org",
     "@type": "Article",
@@ -365,13 +373,15 @@ export function renderBlogPost({ site, post, relatedTools }) {
     datePublished: post.date,
     author: { "@type": "Organization", name: site.name },
     publisher: { "@type": "Organization", name: site.name },
-    mainEntityOfPage: `${site.url}/blog/${post.slug}/`,
+    mainEntityOfPage: `${site.url}${prefix}/blog/${post.slug}/`,
   }];
   return pageShell({
     site,
     title: `${post.title} | FileForma Blog`,
     description: post.description,
-    pathname: `/blog/${post.slug}/`,
+    pathname: `${prefix}/blog/${post.slug}/`,
+    lang: language.code,
+    alternates,
     jsonLd,
     children: `<main>
       <article class="article-page">
