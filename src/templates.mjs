@@ -39,6 +39,15 @@ function iconSvg(name = "file") {
   return `<svg viewBox="0 0 32 32" aria-hidden="true">${icons[name] || icons.file}</svg>`;
 }
 
+function toolTone(tool) {
+  const label = `${tool.group || ""} ${tool.title || ""} ${tool.action || ""}`.toLowerCase();
+  if (label.includes("security") || label.includes("protect") || label.includes("unlock")) return "tone-security";
+  if (label.includes("edit") || label.includes("redact") || label.includes("sign") || label.includes("watermark") || label.includes("rotate") || label.includes("crop")) return "tone-edit";
+  if (label.includes("optimize") || label.includes("compress") || label.includes("resize")) return "tone-optimize";
+  if (tool.category === "Image") return "tone-image";
+  return "tone-convert";
+}
+
 function languageSwitcher(className = "") {
   return `<label class="language-switcher ${className}">
     <span class="visually-hidden">Language</span>
@@ -134,7 +143,7 @@ function pageShell({ site, title, description, pathname, children, jsonLd = [], 
 }
 
 function toolCard(tool) {
-  return `<a class="tool-card" href="/${tool.slug}/">
+  return `<a class="tool-card ${toolTone(tool)}" href="/${tool.slug}/">
     <span class="tool-icon" aria-hidden="true">${iconSvg(tool.icon)}</span>
     <strong>${escapeHtml(tool.title)}</strong>
     <span>${escapeHtml(tool.description)}</span>
@@ -142,7 +151,7 @@ function toolCard(tool) {
 }
 
 function miniToolCard(tool) {
-  return `<a class="mini-tool-card" href="/${tool.slug}/">
+  return `<a class="mini-tool-card ${toolTone(tool)}" href="/${tool.slug}/">
     <span class="tool-icon" aria-hidden="true">${iconSvg(tool.icon)}</span>
     <strong>${escapeHtml(tool.title.replace(" Converter", ""))}</strong>
   </a>`;
@@ -150,6 +159,8 @@ function miniToolCard(tool) {
 
 function converterBox(tool) {
   const multiple = ["merge-pdf", "image-to-pdf", "compare-pdf"].includes(tool.action);
+  const fileLabel = tool.category === "PDF" ? "PDF" : tool.category === "Image" ? "image" : "file";
+  const uploadLabel = `Select ${fileLabel} file${multiple ? "s" : ""}`;
   const controls = `
     ${["split-pdf", "extract-pdf-pages"].includes(tool.action) ? '<label class="option-row">Pages to keep <input class="pages-input" type="text" placeholder="Example: 1-3,5" /></label>' : ""}
     ${tool.action === "remove-pdf-pages" ? '<label class="option-row">Pages to remove <input class="pages-input" type="text" placeholder="Example: 2,4-6" /></label>' : ""}
@@ -166,13 +177,13 @@ function converterBox(tool) {
     <button class="primary-btn convert-btn" type="button" data-i18n="button.convert">Convert now</button>
     <p class="status-text" data-i18n="status.choose">Choose a file to start.</p>
     <div class="queue-list"></div>`;
-  return `<section class="converter-panel" data-tool='${escapeHtml(JSON.stringify(tool))}'>
+  return `<section class="converter-panel ${toolTone(tool)}" data-tool='${escapeHtml(JSON.stringify(tool))}'>
     <div class="mode-pill" data-i18n="${tool.mode === "browser" ? "privacy.local" : "privacy.temporary"}">${tool.mode === "browser" ? "Files stay on your device" : "Files deleted after 30 minutes"}</div>
     <label class="dropzone">
       <input class="file-input" type="file" ${multiple ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
-      <span class="upload-icon" aria-hidden="true">${iconSvg("upload")}</span>
-      <strong data-i18n="upload.title">Drop files here or choose files</strong>
-      <small data-i18n="${tool.mode === "browser" ? "upload.local" : "upload.server"}">${tool.mode === "browser" ? "Files stay on this device." : "Maximum 50 MB per file. Files expire after 30 minutes."}</small>
+      <span class="upload-cta"><span class="upload-icon" aria-hidden="true">${iconSvg("upload")}</span><strong>${escapeHtml(uploadLabel)}</strong></span>
+      <small>or drop files here</small>
+      <span class="upload-trust" aria-label="File handling">🔒 Files deleted in 30 min</span>
     </label>
     ${tool.category === "PDF" ? `<div class="pdf-workspace" hidden>
       <div class="pdf-preview">
@@ -282,8 +293,13 @@ export function renderHome({ site, imageTools, pdfTools, blogPosts = [] }) {
       <section class="home-hero">
         <div class="hero-copy compact-copy">
           <p class="eyebrow">Free PDF and image tools</p>
-          <h1>File conversion tools in one clean place.</h1>
-          <p class="lede">Convert, compress, organize, protect, and resize files without hunting through a long page.</p>
+          <h1>Convert files faster, with privacy in mind.</h1>
+          <p class="lede">Free, no sign-up, privacy-focused tools for PDFs, images, and everyday office files.</p>
+          <div class="hero-badges" aria-label="FileForma benefits">
+            <span>Free tools</span>
+            <span>No sign-up</span>
+            <span>Privacy-focused</span>
+          </div>
         </div>
         <div class="quick-panel">
           <span class="panel-label">Popular tools</span>
