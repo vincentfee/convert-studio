@@ -44,7 +44,6 @@ const I18N = {
     "error.failed": "Conversion failed.",
     "error.rejected": "The conversion server rejected this file.",
     "error.timeout": "Conversion failed or timed out.",
-    "error.serverUnavailable": "The conversion server is unavailable. Please try again shortly.",
     "error.compareTwo": "Choose exactly two PDF files for comparison.",
   },
   es: {
@@ -504,7 +503,27 @@ async function runBrowserTool(panel, tool, files) {
   setStatus(panel, t("status.complete"));
 }
 
+async function waitForServerReady(panel) {
+  const maxAttempts = 12;
+  const retryDelayMs = 5000;
+  setStatus(panel, t("status.waking"));
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(15000) });
+      if (response.ok) return;
+    } catch {
+      // Render free tier may cold-start; retry until the API responds.
+    }
+    if (attempt < maxAttempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
+  }
+  throw new Error(t("error.serverUnavailable"));
+}
+
 async function runServerTool(panel, tool, files) {
+  await waitForServerReady(panel);
+
   const form = new FormData();
   form.append("tool", tool.action);
   form.append("targetFormat", tool.output);
