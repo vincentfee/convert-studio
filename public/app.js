@@ -12,8 +12,18 @@ const I18N = {
     "privacy.local": "Files stay on your device",
     "privacy.temporary": "Files deleted after 30 minutes",
     "upload.title": "Drop files here or choose files",
+    "upload.selectPdf": "Select PDF files",
+    "upload.selectImage": "Select image files",
+    "upload.selectFile": "Select files",
+    "upload.drop": "or drop files here",
+    "upload.trust": "Files deleted in 30 min",
     "upload.local": "Files stay on this device.",
     "upload.server": "Maximum 50 MB per file. Files expire after 30 minutes.",
+    "workspace.filesReady": "Files ready",
+    "workspace.reviewFiles": "Review your files before converting.",
+    "workspace.dragReorder": "Drag files to reorder before merging.",
+    "workspace.addMore": "Add more files",
+    "workspace.actionHint": "Choose options, then run the tool.",
     "button.convert": "Convert now",
     "button.download": "Download",
     "status.choose": "Choose a file to start.",
@@ -23,6 +33,7 @@ const I18N = {
     "status.ready": "Ready",
     "status.complete": "Conversion complete.",
     "status.uploading": "Uploading",
+    "status.renderingPreviews": "Preparing previews.",
     "status.server": "Processing on the conversion server.",
     "status.expires": "Ready / expires in 30 minutes",
     "error.choose": "Choose at least one file.",
@@ -60,6 +71,115 @@ const I18N = {
     "nav.imageTools": "圖片工具", "nav.pdfTools": "PDF 工具", "nav.privacy": "隱私", "footer.about": "關於", "footer.terms": "條款", "footer.contact": "聯絡", "privacy.local": "檔案保留在你的裝置上", "privacy.temporary": "檔案 30 分鐘後刪除", "upload.title": "拖入檔案或選擇檔案", "upload.local": "檔案會保留在你的裝置上。", "upload.server": "單一檔案最大 50 MB，30 分鐘後自動過期。", "button.convert": "開始轉換", "button.download": "下載", "status.choose": "請選擇檔案開始。", "status.selected": "已選擇 {count} 個檔案。", "status.starting": "正在開始轉換。", "status.processing": "處理中", "status.ready": "已完成", "status.complete": "轉換完成。", "status.uploading": "上傳中", "status.server": "正在伺服器上處理。", "status.expires": "已完成 / 30 分鐘後過期", "error.choose": "請至少選擇一個檔案。", "error.one": "這個工具一次只能處理一個檔案。", "error.max": "一次最多加入 {max} 個檔案。", "error.large": "{name} 超過 50 MB。", "error.imageRead": "無法讀取這張圖片。", "error.failed": "轉換失敗。", "error.rejected": "轉換伺服器拒絕了這個檔案。", "error.timeout": "轉換失敗或逾時。",
   },
 };
+const EXTRA_I18N = {
+  es: {
+    "upload.selectPdf": "Seleccionar archivos PDF",
+    "upload.selectImage": "Seleccionar imágenes",
+    "upload.selectFile": "Seleccionar archivos",
+    "upload.drop": "o suéltalos aquí",
+    "upload.trust": "Archivos eliminados en 30 min",
+    "workspace.filesReady": "Archivos listos",
+    "workspace.reviewFiles": "Revisa tus archivos antes de convertir.",
+    "workspace.dragReorder": "Arrastra para reordenar antes de unir.",
+    "workspace.addMore": "Añadir más archivos",
+    "workspace.actionHint": "Elige opciones y ejecuta la herramienta.",
+    "status.renderingPreviews": "Preparando vistas previas.",
+  },
+  fr: {
+    "upload.selectPdf": "Sélectionner des PDF",
+    "upload.selectImage": "Sélectionner des images",
+    "upload.selectFile": "Sélectionner des fichiers",
+    "upload.drop": "ou déposez les fichiers ici",
+    "upload.trust": "Fichiers supprimés en 30 min",
+    "workspace.filesReady": "Fichiers prêts",
+    "workspace.reviewFiles": "Vérifiez vos fichiers avant conversion.",
+    "workspace.dragReorder": "Glissez pour réordonner avant fusion.",
+    "workspace.addMore": "Ajouter des fichiers",
+    "workspace.actionHint": "Choisissez les options puis lancez l’outil.",
+    "status.renderingPreviews": "Préparation des aperçus.",
+  },
+  de: {
+    "upload.selectPdf": "PDF-Dateien auswählen",
+    "upload.selectImage": "Bilder auswählen",
+    "upload.selectFile": "Dateien auswählen",
+    "upload.drop": "oder Dateien hier ablegen",
+    "upload.trust": "Dateien nach 30 Min. gelöscht",
+    "workspace.filesReady": "Dateien bereit",
+    "workspace.reviewFiles": "Prüfen Sie die Dateien vor der Konvertierung.",
+    "workspace.dragReorder": "Zum Neuordnen vor dem Zusammenführen ziehen.",
+    "workspace.addMore": "Weitere Dateien",
+    "workspace.actionHint": "Optionen wählen und Tool starten.",
+    "status.renderingPreviews": "Vorschauen werden vorbereitet.",
+  },
+  pt: {
+    "upload.selectPdf": "Selecionar PDFs",
+    "upload.selectImage": "Selecionar imagens",
+    "upload.selectFile": "Selecionar arquivos",
+    "upload.drop": "ou solte arquivos aqui",
+    "upload.trust": "Arquivos excluídos em 30 min",
+    "workspace.filesReady": "Arquivos prontos",
+    "workspace.reviewFiles": "Revise os arquivos antes de converter.",
+    "workspace.dragReorder": "Arraste para reordenar antes de mesclar.",
+    "workspace.addMore": "Adicionar arquivos",
+    "workspace.actionHint": "Escolha opções e execute a ferramenta.",
+    "status.renderingPreviews": "Preparando visualizações.",
+  },
+  ja: {
+    "upload.selectPdf": "PDFを選択",
+    "upload.selectImage": "画像を選択",
+    "upload.selectFile": "ファイルを選択",
+    "upload.drop": "またはここにドロップ",
+    "upload.trust": "30分後に削除",
+    "workspace.filesReady": "ファイル準備完了",
+    "workspace.reviewFiles": "変換前にファイルを確認してください。",
+    "workspace.dragReorder": "結合前にドラッグで並べ替えます。",
+    "workspace.addMore": "ファイルを追加",
+    "workspace.actionHint": "オプションを選んで実行します。",
+    "status.renderingPreviews": "プレビューを準備中。",
+  },
+  ko: {
+    "upload.selectPdf": "PDF 파일 선택",
+    "upload.selectImage": "이미지 선택",
+    "upload.selectFile": "파일 선택",
+    "upload.drop": "또는 여기에 놓기",
+    "upload.trust": "30분 후 파일 삭제",
+    "workspace.filesReady": "파일 준비됨",
+    "workspace.reviewFiles": "변환 전 파일을 확인하세요.",
+    "workspace.dragReorder": "병합 전 드래그로 순서를 바꾸세요.",
+    "workspace.addMore": "파일 추가",
+    "workspace.actionHint": "옵션을 선택한 뒤 실행하세요.",
+    "status.renderingPreviews": "미리보기 준비 중.",
+  },
+  "zh-CN": {
+    "upload.selectPdf": "选择 PDF 文件",
+    "upload.selectImage": "选择图片文件",
+    "upload.selectFile": "选择文件",
+    "upload.drop": "或拖放文件到这里",
+    "upload.trust": "文件 30 分钟后删除",
+    "workspace.filesReady": "文件已准备好",
+    "workspace.reviewFiles": "转换前请检查文件。",
+    "workspace.dragReorder": "合并前可拖拽调整顺序。",
+    "workspace.addMore": "继续添加文件",
+    "workspace.actionHint": "选择选项后运行工具。",
+    "status.renderingPreviews": "正在生成预览。",
+  },
+  "zh-TW": {
+    "upload.selectPdf": "選擇 PDF 檔案",
+    "upload.selectImage": "選擇圖片檔案",
+    "upload.selectFile": "選擇檔案",
+    "upload.drop": "或拖放檔案到這裡",
+    "upload.trust": "檔案 30 分鐘後刪除",
+    "workspace.filesReady": "檔案已準備好",
+    "workspace.reviewFiles": "轉換前請檢查檔案。",
+    "workspace.dragReorder": "合併前可拖曳調整順序。",
+    "workspace.addMore": "繼續加入檔案",
+    "workspace.actionHint": "選擇選項後執行工具。",
+    "status.renderingPreviews": "正在產生預覽。",
+  },
+};
+for (const [language, messages] of Object.entries(EXTRA_I18N)) {
+  Object.assign(I18N[language] || {}, messages);
+}
 let currentLanguage = localStorage.getItem("fileforma-language") || "en";
 
 function t(key, values = {}) {
@@ -114,44 +234,6 @@ function isPdfFile(file) {
   return file.type === "application/pdf" || /\.pdf$/i.test(file.name);
 }
 
-function clearPdfPreview(panel) {
-  const preview = panel.querySelector(".pdf-preview");
-  const workspace = panel.querySelector(".pdf-workspace");
-  if (!preview) return;
-  const previousUrl = preview.dataset.objectUrl;
-  if (previousUrl) URL.revokeObjectURL(previousUrl);
-  preview.dataset.objectUrl = "";
-  panel.classList.remove("has-pdf-file");
-  if (workspace) workspace.hidden = true;
-  const frame = preview.querySelector(".pdf-preview-frame");
-  if (frame) frame.removeAttribute("src");
-  preview.querySelector(".pdf-preview-name").textContent = "";
-  preview.querySelector(".preview-file-list").replaceChildren();
-}
-
-function renderPdfPreview(panel, files) {
-  const preview = panel.querySelector(".pdf-preview");
-  if (!preview) return;
-  clearPdfPreview(panel);
-  const pdfFiles = files.filter(isPdfFile);
-  if (!pdfFiles.length) return;
-  const workspace = panel.querySelector(".pdf-workspace");
-  panel.classList.add("has-pdf-file");
-  if (workspace) workspace.hidden = false;
-
-  const list = preview.querySelector(".preview-file-list");
-  list.replaceChildren(...pdfFiles.slice(0, 2).map((file, index) => {
-    const item = document.createElement("span");
-    item.textContent = `${index + 1}. ${file.name}`;
-    return item;
-  }));
-
-  const url = URL.createObjectURL(pdfFiles[0]);
-  preview.dataset.objectUrl = url;
-  preview.querySelector(".pdf-preview-name").textContent = pdfFiles[0].name;
-  preview.querySelector(".pdf-preview-frame").src = `${url}#toolbar=0&navpanes=0`;
-}
-
 function validateFiles(files, tool, allowMultiple) {
   if (!files.length) throw new Error(t("error.choose"));
   if (tool.action === "compare-pdf" && files.length !== 2) throw new Error(t("error.compareTwo"));
@@ -160,6 +242,131 @@ function validateFiles(files, tool, allowMultiple) {
   for (const file of files) {
     if (file.size > MAX_FILE_SIZE) throw new Error(t("error.large", { name: file.name }));
   }
+}
+
+function getPdfJs() {
+  const pdfjs = window.pdfjsLib;
+  if (pdfjs && pdfjs.GlobalWorkerOptions) {
+    pdfjs.GlobalWorkerOptions.workerSrc = "/assets/vendor/pdf.worker.min.js";
+  }
+  return pdfjs;
+}
+
+function makeFallbackThumb(file, label = "FILE") {
+  const fallback = document.createElement("div");
+  fallback.className = "thumbnail-fallback";
+  fallback.textContent = label || file.name.split(".").pop()?.slice(0, 4).toUpperCase() || "FILE";
+  return fallback;
+}
+
+async function renderImageThumb(file) {
+  const img = await loadImage(file);
+  const canvas = document.createElement("canvas");
+  const maxSide = 260;
+  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+async function renderPdfThumb(file) {
+  const pdfjs = getPdfJs();
+  if (!pdfjs) return makeFallbackThumb(file, "PDF");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const documentProxy = await pdfjs.getDocument({ data: bytes }).promise;
+  try {
+    const page = await documentProxy.getPage(1);
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(260 / viewport.width, 320 / viewport.height);
+    const scaled = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(scaled.width);
+    canvas.height = Math.round(scaled.height);
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport: scaled }).promise;
+    return canvas;
+  } finally {
+    documentProxy.destroy();
+  }
+}
+
+async function createThumbnailCard(file, index, tool) {
+  const card = document.createElement("article");
+  card.className = `thumbnail-card ${tool.action === "merge-pdf" ? "is-sortable" : ""}`;
+  card.dataset.index = String(index);
+  const preview = document.createElement("div");
+  preview.className = "thumbnail-preview";
+  const meta = document.createElement("div");
+  meta.className = "thumbnail-meta";
+  const name = document.createElement("div");
+  name.className = "thumbnail-name";
+  name.textContent = file.name;
+  const size = document.createElement("div");
+  size.className = "thumbnail-size";
+  size.textContent = formatBytes(file.size);
+  meta.append(name, size);
+  preview.append(makeFallbackThumb(file, isPdfFile(file) ? "PDF" : "IMG"));
+  card.append(preview, meta);
+
+  try {
+    const thumb = isPdfFile(file) ? await renderPdfThumb(file) : await renderImageThumb(file);
+    preview.replaceChildren(thumb);
+  } catch {
+    preview.replaceChildren(makeFallbackThumb(file, isPdfFile(file) ? "PDF" : "IMG"));
+  }
+  return card;
+}
+
+async function renderWorkspace(panel, tool) {
+  const files = panel._selectedFiles || [];
+  const workspace = panel.querySelector(".file-workspace");
+  const grid = panel.querySelector(".thumbnail-grid");
+  if (!workspace || !grid) return;
+  if (!files.length) {
+    workspace.hidden = true;
+    panel.classList.remove("has-files");
+    grid.replaceChildren();
+    return;
+  }
+
+  panel.classList.add("has-files");
+  workspace.hidden = false;
+  setStatus(panel, t("status.renderingPreviews"));
+  const cards = [];
+  for (let index = 0; index < files.length; index += 1) {
+    cards.push(await createThumbnailCard(files[index], index, tool));
+  }
+  grid.replaceChildren(...cards);
+  setStatus(panel, t("status.selected", { count: files.length }));
+
+  if (panel._sortable) {
+    panel._sortable.destroy();
+    panel._sortable = null;
+  }
+  if (tool.action === "merge-pdf" && window.Sortable) {
+    panel._sortable = new Sortable(grid, {
+      animation: 150,
+      ghostClass: "sortable-ghost",
+      onEnd(event) {
+        const moved = panel._selectedFiles.splice(event.oldIndex, 1)[0];
+        panel._selectedFiles.splice(event.newIndex, 0, moved);
+        setStatus(panel, t("status.selected", { count: panel._selectedFiles.length }));
+      },
+    });
+  }
+}
+
+async function setSelectedFiles(panel, tool, incomingFiles, append = false) {
+  const current = append && panel._selectedFiles ? panel._selectedFiles : [];
+  const nextFiles = tool.action === "merge-pdf" || tool.action === "image-to-pdf" || tool.action === "compare-pdf"
+    ? [...current, ...incomingFiles]
+    : incomingFiles.slice(0, 1);
+  validateFiles(nextFiles, tool, panel.querySelector(".file-input").multiple);
+  panel._selectedFiles = nextFiles;
+  await renderWorkspace(panel, tool);
 }
 
 function loadImage(file) {
@@ -345,6 +552,7 @@ function setupPanel(panel) {
   const input = panel.querySelector(".file-input");
   const dropzone = panel.querySelector(".dropzone");
   const button = panel.querySelector(".convert-btn");
+  const addMore = panel.querySelector(".add-more-btn");
 
   dropzone.addEventListener("dragover", (event) => {
     event.preventDefault();
@@ -354,19 +562,34 @@ function setupPanel(panel) {
   dropzone.addEventListener("drop", (event) => {
     event.preventDefault();
     dropzone.classList.remove("is-dragging");
-    input.files = event.dataTransfer.files;
-    renderPdfPreview(panel, Array.from(input.files || []));
-    setStatus(panel, t("status.selected", { count: input.files.length }));
+    setSelectedFiles(panel, tool, Array.from(event.dataTransfer.files || [])).catch((error) => {
+      setStatus(panel, error.message || t("error.failed"));
+    });
   });
   input.addEventListener("change", () => {
-    renderPdfPreview(panel, Array.from(input.files || []));
-    setStatus(panel, t("status.selected", { count: input.files.length }));
+    setSelectedFiles(panel, tool, Array.from(input.files || []), panel.classList.contains("has-files")).catch((error) => {
+      setStatus(panel, error.message || t("error.failed"));
+    }).finally(() => {
+      input.value = "";
+    });
+  });
+  if (addMore) {
+    addMore.addEventListener("click", () => {
+      input.click();
+    });
+  }
+
+  dropzone.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      input.click();
+    }
   });
 
   button.addEventListener("click", async () => {
     button.disabled = true;
     try {
-      const files = Array.from(input.files || []);
+      const files = panel._selectedFiles || [];
       validateFiles(files, tool, input.multiple);
       setStatus(panel, t("status.starting"));
       if (tool.mode === "browser") {

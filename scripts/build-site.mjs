@@ -1,4 +1,4 @@
-import { mkdir, writeFile, copyFile, rm } from "node:fs/promises";
+import { cp, mkdir, writeFile, copyFile, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { imageTools, pdfTools, legalPages, blogPosts, site } from "../src/site-data.mjs";
@@ -28,6 +28,7 @@ async function main() {
   await mkdir(join(dist, "assets"), { recursive: true });
   await copyFile(join(publicDir, "app.css"), join(dist, "assets", "app.css"));
   await copyFile(join(publicDir, "app.js"), join(dist, "assets", "app.js"));
+  await cp(join(publicDir, "vendor"), join(dist, "assets", "vendor"), { recursive: true });
   const apiBase = process.env.CONVERT_API_BASE || "http://localhost:8000";
   await writeFile(join(dist, "assets", "config.js"), `window.CONVERT_API_BASE = ${JSON.stringify(apiBase)};\n`, "utf8");
 

@@ -136,6 +136,8 @@ function pageShell({ site, title, description, pathname, children, jsonLd = [], 
       </nav>
       ${languageSwitcher("footer-language")}
     </footer>
+    <script src="/assets/vendor/pdf.min.js"></script>
+    <script src="/assets/vendor/Sortable.min.js"></script>
     <script src="/assets/config.js"></script>
     <script src="/assets/app.js"></script>
   </body>
@@ -160,7 +162,7 @@ function miniToolCard(tool) {
 function converterBox(tool) {
   const multiple = ["merge-pdf", "image-to-pdf", "compare-pdf"].includes(tool.action);
   const fileLabel = tool.category === "PDF" ? "PDF" : tool.category === "Image" ? "image" : "file";
-  const uploadLabel = `Select ${fileLabel} file${multiple ? "s" : ""}`;
+  const uploadKey = tool.category === "PDF" ? "upload.selectPdf" : tool.category === "Image" ? "upload.selectImage" : "upload.selectFile";
   const controls = `
     ${["split-pdf", "extract-pdf-pages"].includes(tool.action) ? '<label class="option-row">Pages to keep <input class="pages-input" type="text" placeholder="Example: 1-3,5" /></label>' : ""}
     ${tool.action === "remove-pdf-pages" ? '<label class="option-row">Pages to remove <input class="pages-input" type="text" placeholder="Example: 2,4-6" /></label>' : ""}
@@ -181,24 +183,29 @@ function converterBox(tool) {
     <div class="mode-pill" data-i18n="${tool.mode === "browser" ? "privacy.local" : "privacy.temporary"}">${tool.mode === "browser" ? "Files stay on your device" : "Files deleted after 30 minutes"}</div>
     <label class="dropzone">
       <input class="file-input" type="file" ${multiple ? "multiple" : ""} accept="${escapeHtml(tool.accept)}" />
-      <span class="upload-cta"><span class="upload-icon" aria-hidden="true">${iconSvg("upload")}</span><strong>${escapeHtml(uploadLabel)}</strong></span>
-      <small>or drop files here</small>
-      <span class="upload-trust" aria-label="File handling">🔒 Files deleted in 30 min</span>
+      <span class="upload-cta"><span class="upload-icon" aria-hidden="true">${iconSvg("upload")}</span><strong data-i18n="${uploadKey}">Select ${escapeHtml(fileLabel)} file${multiple ? "s" : ""}</strong></span>
+      <small data-i18n="upload.drop">or drop files here</small>
+      <span class="upload-trust" aria-label="File handling"><span aria-hidden="true">🔒</span><span data-i18n="upload.trust">Files deleted in 30 min</span></span>
     </label>
-    ${tool.category === "PDF" ? `<div class="pdf-workspace" hidden>
-      <div class="pdf-preview">
-        <div class="pdf-preview-head"><strong>Preview selected PDF</strong><span class="pdf-preview-name"></span></div>
-        <div class="preview-file-list"></div>
-        <iframe class="pdf-preview-frame" title="PDF preview"></iframe>
+    <div class="file-workspace" hidden>
+      <div class="file-workspace-main">
+        <div class="workspace-head">
+          <div>
+            <strong data-i18n="workspace.filesReady">Files ready</strong>
+            <span class="workspace-hint" data-i18n="${tool.action === "merge-pdf" ? "workspace.dragReorder" : "workspace.reviewFiles"}">${tool.action === "merge-pdf" ? "Drag files to reorder before merging." : "Review your files before converting."}</span>
+          </div>
+          <button class="secondary-btn add-more-btn" type="button" data-i18n="workspace.addMore">Add more files</button>
+        </div>
+        <div class="thumbnail-grid" aria-label="Selected files"></div>
       </div>
-      <div class="pdf-workflow">
+      <aside class="action-panel">
         <div class="workflow-step">
           <strong>Step 2: adjust this ${escapeHtml(tool.title)}</strong>
-          <span>Use the preview on the left while choosing pages or entering edit details.</span>
+          <span data-i18n="workspace.actionHint">Choose options, then run the tool.</span>
         </div>
         ${controls}
-      </div>
-    </div>` : controls}
+      </aside>
+    </div>
   </section>`;
 }
 
