@@ -11,6 +11,8 @@ services:
         value: 24
       - key: CONVERT_API_BASE
         value: https://convert-studio-pdf-api.onrender.com
+      - key: GA_MEASUREMENT_ID
+        value: G-P9C4P4XG5G
 
   - type: web
     name: convert-studio-pdf-api
