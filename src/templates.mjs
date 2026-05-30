@@ -39,6 +39,70 @@ function iconSvg(name = "file") {
   return `<svg viewBox="0 0 32 32" aria-hidden="true">${icons[name] || icons.file}</svg>`;
 }
 
+// Large section header icons (SVG paths for 48x48 viewBox)
+function sectionIconSvg(name) {
+  const icons = {
+    "organize-pdf": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="6" width="16" height="16" rx="3"/>
+      <rect x="26" y="6" width="16" height="16" rx="3"/>
+      <rect x="6" y="26" width="16" height="16" rx="3"/>
+      <rect x="26" y="26" width="16" height="16" rx="3"/>
+    </svg>`,
+    "optimize-pdf": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 6l4 8 9 1.3-6.5 6.3 1.5 9L24 26l-8 4.6 1.5-9L11 15.3l9-1.3z"/>
+      <path d="M8 38h32"/>
+      <path d="M14 43h20"/>
+    </svg>`,
+    "convert-to-pdf": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="10" width="18" height="22" rx="3"/>
+      <path d="M30 10h6l6 6v22H24v-6"/>
+      <path d="M36 10v7h6"/>
+      <path d="M18 24l6-6 6 6"/>
+      <path d="M24 18v14"/>
+    </svg>`,
+    "convert-from-pdf": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 6h18l8 8v28H12z"/>
+      <path d="M30 6v9h8"/>
+      <path d="M20 30l8 8 8-8"/>
+      <path d="M28 38V24"/>
+    </svg>`,
+    "edit-pdf": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 6h18l8 8v28H12z"/>
+      <path d="M30 6v9h8"/>
+      <path d="M28 28l8-8 4 4-8 8z"/>
+      <path d="M26 30l4 4-5 1z"/>
+      <path d="M18 20h10M18 26h8"/>
+    </svg>`,
+    "pdf-security": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 4l16 6v12c0 10-7 18-16 22C8 40 8 34 8 22V10z"/>
+      <rect x="17" y="22" width="14" height="12" rx="2"/>
+      <path d="M20 22v-3a4 4 0 0 1 8 0v3"/>
+    </svg>`,
+    "image-tools": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="10" width="36" height="28" rx="4"/>
+      <circle cx="16" cy="20" r="4"/>
+      <path d="M6 34l10-10 8 8 6-6 12 12"/>
+    </svg>`,
+    "blog": `<svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 6h28a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4z"/>
+      <path d="M16 18h16M16 24h16M16 30h10"/>
+    </svg>`,
+  };
+  return icons[name] || icons["blog"];
+}
+
+function sectionGroupMeta(group) {
+  const map = {
+    "Organize PDF":     { icon: "organize-pdf",     tone: "tone-convert",  desc: "Merge, split, reorder and extract pages" },
+    "Optimize PDF":     { icon: "optimize-pdf",     tone: "tone-optimize", desc: "Compress, repair and compare PDF files" },
+    "Convert to PDF":   { icon: "convert-to-pdf",   tone: "tone-convert",  desc: "Turn images and Office files into PDF" },
+    "Convert from PDF": { icon: "convert-from-pdf", tone: "tone-convert",  desc: "Export PDF to images, Word and more" },
+    "Edit PDF":         { icon: "edit-pdf",         tone: "tone-edit",     desc: "Rotate, annotate, watermark and sign" },
+    "PDF Security":     { icon: "pdf-security",     tone: "tone-security", desc: "Protect and unlock PDF documents" },
+  };
+  return map[group] || { icon: "organize-pdf", tone: "tone-convert", desc: "" };
+}
+
 function toolTone(tool) {
   const label = `${tool.group || ""} ${tool.title || ""} ${tool.action || ""}`.toLowerCase();
   if (label.includes("security") || label.includes("protect") || label.includes("unlock")) return "tone-security";
@@ -291,6 +355,10 @@ export function renderHome({ site, imageTools, pdfTools, blogPosts = [] }) {
   const popular = ["merge-pdf", "compress-pdf", "pdf-to-word", "jpg-to-pdf", "heic-to-jpg", "png-to-jpg", "webp-to-jpg", "image-to-pdf"]
     .map((slug) => allTools.find((tool) => tool.slug === slug))
     .filter(Boolean);
+
+  // Blog category color accents
+  const blogAccents = ["accent-blue", "accent-purple", "accent-teal"];
+
   return pageShell({
     site,
     title: "Free Image and PDF Converter Tools | FileForma",
@@ -313,29 +381,65 @@ export function renderHome({ site, imageTools, pdfTools, blogPosts = [] }) {
           <div class="quick-grid">${popular.map(miniToolCard).join("")}</div>
         </div>
       </section>
+
       <section class="tool-directory" id="pdf-tools">
+        <div class="section-header-row">
+          <div class="section-header-icon tone-convert">${sectionIconSvg("organize-pdf")}</div>
+          <div>
+            <p class="eyebrow">PDF Tools</p>
+            <h2 class="section-title">Everything you need for PDF</h2>
+          </div>
+        </div>
         <div class="tool-tabs" aria-label="Tool categories">
           <a href="#pdf-tools">PDF Tools</a>
           <a href="#image-tools">Image Tools</a>
           <a href="/blog/">Guides</a>
           ${pdfGroups.map((group) => `<a href="#${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">${escapeHtml(group)}</a>`).join("")}
         </div>
-        ${pdfGroups.map((group) => `<section class="tool-group" id="${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
-          <h3>${escapeHtml(group)}</h3>
-          <div class="tool-list directory-list">${pdfTools.filter((tool) => tool.group === group).map(miniToolCard).join("")}</div>
-        </section>`).join("")}
+        ${pdfGroups.map((group) => {
+          const meta = sectionGroupMeta(group);
+          return `<section class="tool-group" id="${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
+            <div class="group-header">
+              <div class="group-icon ${meta.tone}">${sectionIconSvg(meta.icon)}</div>
+              <div class="group-header-text">
+                <h3>${escapeHtml(group)}</h3>
+                <p class="group-desc">${escapeHtml(meta.desc)}</p>
+              </div>
+            </div>
+            <div class="tool-list directory-list">${pdfTools.filter((tool) => tool.group === group).map(miniToolCard).join("")}</div>
+          </section>`;
+        }).join("")}
       </section>
+
       <div class="ad-slot" aria-label="Advertisement">Advertisement</div>
+
       <section class="tool-directory" id="image-tools">
-        <h2>Image tools</h2>
+        <div class="section-header-row">
+          <div class="section-header-icon tone-image">${sectionIconSvg("image-tools")}</div>
+          <div>
+            <p class="eyebrow">Image Tools</p>
+            <h2 class="section-title">Convert &amp; optimise images</h2>
+            <p class="section-desc">Transform between JPG, PNG, WebP, HEIC, AVIF and more — all in your browser.</p>
+          </div>
+        </div>
         <div class="tool-list directory-list">${imageTools.map(miniToolCard).join("")}</div>
       </section>
+
       <section class="blog-strip">
-        <div>
-          <p class="eyebrow">File guides</p>
-          <h2>Learn file formats, privacy, and office workflows</h2>
+        <div class="blog-strip-header">
+          <div class="section-header-icon tone-blog">${sectionIconSvg("blog")}</div>
+          <div>
+            <p class="eyebrow">File guides</p>
+            <h2>Learn file formats,<br>privacy &amp; workflows</h2>
+          </div>
         </div>
-        <div class="blog-card-list">${blogPosts.slice(0, 3).map((post) => `<a class="blog-card" href="/blog/${post.slug}/"><strong>${escapeHtml(post.title)}</strong><span>${escapeHtml(post.description)}</span></a>`).join("")}</div>
+        <div class="blog-card-list">${blogPosts.slice(0, 3).map((post, i) => `<a class="blog-card ${blogAccents[i % blogAccents.length]}" href="/blog/${post.slug}/">
+          <div class="blog-card-body">
+            <strong>${escapeHtml(post.title)}</strong>
+            <span>${escapeHtml(post.description)}</span>
+          </div>
+          <span class="blog-card-cta">Read guide →</span>
+        </a>`).join("")}</div>
       </section>
     </main>`,
   });
